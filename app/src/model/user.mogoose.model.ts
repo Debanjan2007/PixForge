@@ -32,10 +32,14 @@ const userSchema = new mongoose.Schema<UserDocument>(
             immutable: true
         },
         image: [{
-            type: String,
-            required: false,
-            default: null,
-            unique: false 
+            url : {
+                type : String
+            },
+            fieldId : {
+                type : String ,
+                unique : true ,
+                default : uuid()
+            }
         }]
     },
     {

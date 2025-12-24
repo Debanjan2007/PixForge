@@ -20,6 +20,7 @@
   "homepage": "https://github.com/Debanjan2007/image-processor#readme",
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/imagekit": "^3.1.5",
     "@types/jsonwebtoken": "^9.0.10",
@@ -29,11 +30,12 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@imagekit/nodejs": "^7.1.1",
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "devdad-express-utils": "^1.5.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "imagekit": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.1",
     "multer": "^2.0.2",
