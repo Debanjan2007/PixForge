@@ -140,7 +140,8 @@ dist
 
 # SvelteKit build / generate output
 .svelte-kit
-
+combined.log
+error.log
 # End of https://www.toptal.com/developers/gitignore/api/node
 Chat
 
