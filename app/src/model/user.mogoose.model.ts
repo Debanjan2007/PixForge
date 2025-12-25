@@ -2,12 +2,17 @@ import mongoose from "mongoose";
 import { v4 as uuid } from 'uuid'
 import { hash } from 'bcrypt'
 import jwt, { type Secret } from 'jsonwebtoken'
+import type { imagemetadata } from '../controller/users.controller.js'
 
 interface UserDocument extends mongoose.Document {
     username: string;
     password: string;
     uid: string;
-    image?: string[];
+    image?:  Array<{
+            url : string ,
+            fieldId : string ,
+            metadata : imagemetadata
+        }>;
     genToken() : Promise<string>;
 }
 
@@ -37,8 +42,37 @@ const userSchema = new mongoose.Schema<UserDocument>(
             },
             fieldId : {
                 type : String ,
-                unique : true ,
-                default : uuid()
+            },
+            metadata : {
+                name : {
+                    type : String
+                } , 
+                versionInfo : {
+                    id : {
+                        type : String
+                    } ,
+                    name : {
+                        type : String
+                    }
+                },
+                filepath : {
+                    type : String
+                },
+                fileType : {
+                    type : String ,
+                    default : 'image/png'
+                },
+                dimensions : {
+                    width : {
+                        type : Number
+                    },
+                    height : {
+                        type : Number
+                    }
+                },
+                thumbnailUrl : {
+                    type : String
+                }
             }
         }]
     },

@@ -3,6 +3,7 @@ import { connectDB , getDBStatus } from 'devdad-express-utils'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { connectImageKit } from './src/utils/imagekit.conf.js'
 
 const __filename = fileURLToPath(import.meta.url)
 export const __dirname = path.dirname(__filename)
@@ -11,12 +12,12 @@ dotenv.config({ path: path.join(__dirname, '.env') })
 
 
 const port = 5600;
-export const imagekitPrivateKey = process.env.IMAGEKIT_PRIVATE_KEY as string ;
 
 connectDB().then(() => {
     const dbStatus = getDBStatus()
     console.log(`Mongodb connected on ${dbStatus.host}`);    
     app.listen(port, () => {
+        connectImageKit(process.env.IMAGEKIT_PRIVATE_KEY as string)
         console.log(`Server is running at http://localhost:${port}`);
     })
 })

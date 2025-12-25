@@ -1,9 +1,10 @@
 import { catchAsync, sendSuccess, sendError } from 'devdad-express-utils'
 import mongoose from 'mongoose'
 import { User } from '../model/user.mogoose.model.js'
-import ImageKit from '@imagekit/nodejs'
 import fs from 'fs'
-import { imagekitPrivateKey as privatekey} from '../../index.js'
+import { imagekitClient } from '../utils/imagekit.conf.js'
+import ImageKit from '@imagekit/nodejs';
+import type { Request, Response } from 'express'
 
 interface user {
     username: string,
@@ -16,14 +17,30 @@ export interface dbuser {
     _id: mongoose.Types.ObjectId,
     createdAt: Date,
     updatedAt: Date,
-    image?: string[],
+    image?: Array<{
+        url: string,
+        fieldId: string,
+        metadata: imagemetadata
+    }>,
     __v: number,
     genToken(): Promise<string>;
 }
 
-const imagekit = new ImageKit({
-    privateKey: privatekey,
-})
+export interface imagemetadata {
+    name: string,
+    versionInfo: {
+        id: string,
+        name: string
+    },
+    filepath: string,
+    fileType: string,
+    dimensions: {
+        width: number,
+        height: number
+    },
+    thumbnailUrl: string
+}
+export type AuthRequest = Request & { user?: dbuser };
 
 const genaccessToken = async function (uid: string): Promise<string | null | undefined> {
     try {
@@ -111,8 +128,7 @@ const loginUser = catchAsync(async (req, res) => {
         )
     }
 })
-
-const imageUploader = catchAsync(async (req, res) => {
+const imageUploader = catchAsync(async (req: AuthRequest, res: Response) => {
     console.log(req.file?.path)
     try {
         if (!req.file) {
@@ -120,12 +136,51 @@ const imageUploader = catchAsync(async (req, res) => {
         }
         const params: ImageKit.FileUploadParams = {
             file: fs.createReadStream(`${req.file.path}`),
-            fileName: `${req.file.filename}`,
+            fileName: `${req.file.originalname}`,
         };
-        const response: ImageKit.FileUploadResponse = await imagekit.files.upload(params);
-        console.log(response);
-        fs.unlinkSync(req.file.path); // delete the file after upload
-        return sendSuccess(res, { response }, "File uploaded successfully", 200)        
+        if (!imagekitClient) {
+            return sendError(res, "Imagekit not connected", 500, null)
+        }
+        const response: ImageKit.FileUploadResponse = await imagekitClient.files.upload(params);
+        // delete the file from local storage
+        fs.unlinkSync(req.file.path);
+        if (response === null || response === undefined) {
+            return sendError(res, "Error uploading image", 500, null)
+        }
+        const metadata: imagemetadata = {
+            name: `${response.name}`,
+            versionInfo: {
+                id: `${response.versionInfo?.id || ''}`,
+                name: `${response.versionInfo?.name || ''}`
+            },
+            filepath: `${response.filePath}`,
+            fileType: `${response.fileType}`,
+            dimensions: {
+                width: response.width ? response.width : 0,
+                height: response.height ? response.height : 0
+            },
+            thumbnailUrl: `${response.thumbnailUrl}`
+        }
+        console.log(metadata);
+        console.log(`user : ${req.user}`);
+        const user = req.user;
+        if (!user || !user.uid) {
+            return sendError(res, "User not authenticated", 401, null)
+        }
+        await User.findOneAndUpdate(
+            { uid: user.uid },
+            {
+                $push: {
+                    image: {
+                        url: response.url,
+                        fieldId: response.fileId,
+                        metadata: metadata
+                    }
+                }
+            },
+            { new: true }
+        )
+        return sendSuccess(res, { url: response.url, id: response.fileId }, "Image uploaded successfully", 200)
     } catch (error) {
         console.log(error);
         return sendError(res, "Internal server error", 500, null)
