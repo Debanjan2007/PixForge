@@ -2,18 +2,22 @@ import mongoose from "mongoose";
 import { v4 as uuid } from 'uuid'
 import { hash } from 'bcrypt'
 import jwt, { type Secret } from 'jsonwebtoken'
-import type { imagemetadata } from '../controller/users.controller.js'
+import type { imagemetadata } from '../types/image.types.js'
 
 interface UserDocument extends mongoose.Document {
     username: string;
     password: string;
     uid: string;
-    image?:  Array<{
-            url : string ,
-            fieldId : string ,
-            metadata : imagemetadata
-        }>;
-    genToken() : Promise<string>;
+    image?: Array<{
+        url: string,
+        fieldId: string,
+        metadata: imagemetadata
+    }>;
+    transformedImages?: Array<{
+        url: string,
+        fieldId: string,
+    }>
+    genToken(): Promise<string>;
 }
 
 const userSchema = new mongoose.Schema<UserDocument>(
@@ -37,42 +41,51 @@ const userSchema = new mongoose.Schema<UserDocument>(
             immutable: true
         },
         image: [{
-            url : {
-                type : String
+            url: {
+                type: String
             },
-            fieldId : {
-                type : String ,
+            fieldId: {
+                type: String,
             },
-            metadata : {
-                name : {
-                    type : String
-                } , 
-                versionInfo : {
-                    id : {
-                        type : String
-                    } ,
-                    name : {
-                        type : String
-                    }
+            metadata: {
+                name: {
+                    type: String
                 },
-                filepath : {
-                    type : String
-                },
-                fileType : {
-                    type : String ,
-                    default : 'image/png'
-                },
-                dimensions : {
-                    width : {
-                        type : Number
+                versionInfo: {
+                    id: {
+                        type: String
                     },
-                    height : {
-                        type : Number
+                    name: {
+                        type: String
                     }
                 },
-                thumbnailUrl : {
-                    type : String
+                filepath: {
+                    type: String
+                },
+                fileType: {
+                    type: String,
+                    default: 'image/png'
+                },
+                dimensions: {
+                    width: {
+                        type: Number
+                    },
+                    height: {
+                        type: Number
+                    }
+                },
+                thumbnailUrl: {
+                    type: String
                 }
+            }
+        }],
+        transformedImages: [{
+            url: {
+                type: String
+            },
+            fieldId: {
+                type: String,
+                default: uuid()
             }
         }]
     },

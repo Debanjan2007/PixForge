@@ -12,5 +12,6 @@ WORKDIR /app
 COPY --from=builder /app/package*.json ./
 RUN npm install --omit=dev
 COPY --from=builder /app/dist ./dist
-EXPOSE 3000
+RUN cd ./dist/src && mkdir uploads
+EXPOSE 5600
 CMD ["npm" , "start"]

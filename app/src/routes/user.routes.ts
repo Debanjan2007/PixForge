@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { reisterUser , loginUser , imageUploader , getImageById , getImageList} from '../controller/users.controller.js'
+import { reisterUser , loginUser , imageUploader , getImageById , getImageList , transformImageurl} from '../controller/users.controller.js'
 import { verifyJwt } from '../middleware/verifyjwt.middleware.js'
 
 export const router = Router() 
@@ -13,3 +13,4 @@ router.post('/login' , loginUser)
 router.post('/upload-image' , verifyJwt , upload.single('image') , imageUploader )
 router.get('/images/:id' , verifyJwt , getImageById)
 router.get('/images' , verifyJwt , getImageList)
+router.patch('/images/:id/transform' , verifyJwt , transformImageurl)

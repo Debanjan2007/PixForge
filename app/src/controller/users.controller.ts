@@ -1,45 +1,14 @@
 import { catchAsync, sendSuccess, sendError } from 'devdad-express-utils'
-import mongoose from 'mongoose'
 import { User } from '../model/user.mogoose.model.js'
 import fs from 'fs'
 import { imagekitClient } from '../utils/imagekit.conf.js'
 import ImageKit from '@imagekit/nodejs';
 import type { Request, Response } from 'express'
+import type { dbuser, user } from '../types/api.types.js'
+import type { imagemetadata } from '../types/image.types.js'
+import { transformImage } from '../utils/image.transform.js'
+import type { imagetransformoptions } from '../types/image.types.js'
 
-interface user {
-    username: string,
-    password: string
-}
-export interface dbuser {
-    uid: string,
-    username: string,
-    password: string,
-    _id: mongoose.Types.ObjectId,
-    createdAt: Date,
-    updatedAt: Date,
-    image?: Array<{
-        url: string,
-        fieldId: string,
-        metadata: imagemetadata
-    }>,
-    __v: number,
-    genToken(): Promise<string>;
-}
-
-export interface imagemetadata {
-    name: string,
-    versionInfo: {
-        id: string,
-        name: string
-    },
-    filepath: string,
-    fileType: string,
-    dimensions: {
-        width: number,
-        height: number
-    },
-    thumbnailUrl: string
-}
 export type AuthRequest = Request & { user?: dbuser };
 const genaccessToken = async function (uid: string): Promise<string | null | undefined> {
     try {
@@ -236,18 +205,18 @@ const getImageList = catchAsync(async (req: AuthRequest, res: Response) => {
                     path: "$image",
                     includeArrayIndex: "imageIndex",
                 }
-            },{
-                $skip : ( page - 1 ) * limit 
+            }, {
+                $skip: (page - 1) * limit
             }
             , {
                 $project: {
                     image: 1
                 }
-            } , {
-                $limit : limit
+            }, {
+                $limit: limit
             }
         ])
-        if(!images){
+        if (!images) {
             return sendError(res, "No images found", 404, null);
         }
         return sendSuccess(res, images, "Images fetched successfully", 200)
@@ -256,10 +225,53 @@ const getImageList = catchAsync(async (req: AuthRequest, res: Response) => {
         sendError(res, "Internal server error", 500, null);
     }
 })
+// transform image
+const transformImageurl = catchAsync(async (req: AuthRequest, res: Response) => {
+    if (req.body === undefined || req.body === null) {
+        return sendError(res, "Transformation are not there please give transformations", 404, null)
+    }
+    if(!req.params.id){
+        return sendError(res , "image id is not mentioned" , 404 , null)
+    }
+    try {
+        const t: imagetransformoptions = req.body;
+        const imageId = req.params.id
+        const user = req.user as dbuser
+        const image = await User.aggregate([
+            {   
+                $match : {
+                    "uid" : user.uid
+                }
+            },
+            {
+                $unwind: {
+                    path: "$image",
+                    includeArrayIndex: "imageIndex",
+                }
+            }, {
+                $match: {
+                    "image.fieldId": imageId
+                }
+            }, {
+                $project: {
+                    image: 1,
+                }
+            }
+        ])
+        const transformedImage = transformImage(t , image[0].image.url)
+        user?.transformedImages?.push({url : transformedImage})
+        await user.save({validateBeforeSave : false})
+        return sendSuccess(res , transformedImage , "Image transformation done" , 200)
+    } catch (error) {
+        return sendError(res , "Internal server error" , 500 , null)
+    }
+})
+
 export {
     reguser as reisterUser,
     loginUser,
     imageUploader,
     getImageById,
-    getImageList
+    getImageList,
+    transformImageurl
 }

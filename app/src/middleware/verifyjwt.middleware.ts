@@ -1,13 +1,10 @@
 import { sendError , catchAsync } from 'devdad-express-utils'
 import jwt from 'jsonwebtoken'
-import type { dbuser } from '../controller/users.controller.js'
+import type { dbuser } from '../types/api.types.js'
 import { User } from '../model/user.mogoose.model.js'
 import type { AuthRequest } from '../controller/users.controller.js'
+import type { JwtPayload } from '../types/api.types.js'
 
-interface JwtPayload { 
-    uid : string ,
-    username : string
-}
 
 export const verifyJwt = catchAsync(async (req : AuthRequest , res , next) => {
     try {

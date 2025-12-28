@@ -1,0 +1,48 @@
+name : image-processor
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    networks: 
+      - image-processor-network
+  db:
+    image: mongo:7.0
+    container_name: mongodb
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: debaRoadmap
+      MONGO_INITDB_ROOT_PASSWORD: deba123456
+    volumes:
+      - mongo_roadmap_deba_db:/data/db
+    networks: 
+      - image-processor-network
+  server:
+    image: nginx
+    container_name: nginx-server
+    ports:
+      - 8080:80
+    depends_on:
+      - app
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks: 
+      - image-processor-network
+
+networks:
+  image-processor-network:
+    driver: bridge
+
+volumes:
+  mongo_roadmap_deba_db : 
+    driver: local
