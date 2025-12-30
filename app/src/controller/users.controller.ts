@@ -8,6 +8,7 @@ import type { dbuser, user } from '../types/api.types.js'
 import type { imagemetadata } from '../types/image.types.js'
 import { transformImage } from '../utils/image.transform.js'
 import type { imagetransformoptions } from '../types/image.types.js'
+import { client } from '../db/redis.db.connect.js'
 
 export type AuthRequest = Request & { user?: dbuser };
 const genaccessToken = async function (uid: string): Promise<string | null | undefined> {
@@ -25,7 +26,7 @@ const genaccessToken = async function (uid: string): Promise<string | null | und
     }
 }
 
-const reguser = catchAsync(async (req, res) => {
+const reguser = catchAsync(async (req: Request, res: Response) => {
     try {
         if (req.body === null || req.body === undefined) {
             return sendError(res, "Please provide user details", 400, null)
@@ -60,7 +61,7 @@ const reguser = catchAsync(async (req, res) => {
     }
 })
 // login user 
-const loginUser = catchAsync(async (req, res) => {
+const loginUser = catchAsync(async (req: Request, res: Response) => {
     try {
         const userDetails: user = req.body;
         if (typeof (userDetails.username) !== 'string' || typeof (userDetails.password) !== 'string') {
@@ -266,12 +267,27 @@ const transformImageurl = catchAsync(async (req: AuthRequest, res: Response) => 
         return sendError(res , "Internal server error" , 500 , null)
     }
 })
-
+// log out securely
+const logout = catchAsync(async (req: AuthRequest , res: Response) => {
+    const accessToken = req.cookies.accessToken ;
+    const rediskey : string = `token-${req.user?.uid}`
+    await client?.set(rediskey , accessToken , {
+        EX: 60 * 60 * 24 
+    })
+    res.clearCookie(accessToken)
+    return sendSuccess(res , null ,"user logout successfull" , 200)
+})
+// delete account
+// const delacc = catchAsync(async (req: AuthRequest , res: Response) => {
+//     const user = req.user as dbuser ;
+    
+// })
 export {
     reguser as reisterUser,
     loginUser,
     imageUploader,
     getImageById,
     getImageList,
-    transformImageurl
+    transformImageurl,
+    logout
 }

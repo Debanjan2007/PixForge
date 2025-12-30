@@ -4,6 +4,7 @@ import type { dbuser } from '../types/api.types.js'
 import { User } from '../model/user.mogoose.model.js'
 import type { AuthRequest } from '../controller/users.controller.js'
 import type { JwtPayload } from '../types/api.types.js'
+import { client } from '../db/redis.db.connect.js'
 
 
 export const verifyJwt = catchAsync(async (req : AuthRequest , res , next) => {
@@ -19,6 +20,10 @@ export const verifyJwt = catchAsync(async (req : AuthRequest , res , next) => {
         const decoded = jwt.verify(token , secret) as JwtPayload ;
         if(!decoded){
             return sendError(res , "Invalid token" , 401 , null)
+        }   
+        const tokenfromredis : string | null | undefined = await client?.get(`token-${decoded.uid}`)
+        if(typeof tokenfromredis !== undefined || typeof tokenfromredis !== null){
+            return sendError(res , "User has already loged out" , 401 , null )
         }
         const user = await User.findOne({ uid : decoded.uid }) as unknown as dbuser;
         if(!user){

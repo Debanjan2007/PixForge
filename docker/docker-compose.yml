@@ -8,8 +8,8 @@ services:
     ports:
       - 27017:27017
     environment:
-      MONGO_INITDB_ROOT_USERNAME: roadmap
-      MONGO_INITDB_ROOT_PASSWORD: roadmapimageprocess123
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
     restart: always
     volumes:
       - mongo_roadmap_db:/data/db
@@ -22,13 +22,24 @@ services:
       - db
     restart: always
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: roadmap
-      ME_CONFIG_MONGODB_ADMINPASSWORD: roadmapimageprocess123
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGODB_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGODB_PASSWORD}
       ME_CONFIG_MONGODB_SERVER: db
-      ME_CONFIG_BASICAUTH_USERNAME: roadmapUser
-      ME_CONFIG_BASICAUTH_PASSWORD: admin123
-
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGOUI_UI_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_UI_PASSWORD}
+  redis : 
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - 6379:6379
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASS}
+    command: ["redis-server", "--requirepass", "${REDIS_PASS}"]
+    volumes:
+      - redis_roadmap_db:/data
 
 volumes:
   mongo_roadmap_db : 
+    driver: local
+  redis_roadmap_db:
     driver: local
