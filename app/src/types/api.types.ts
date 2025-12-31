@@ -9,6 +9,7 @@ export interface dbuser {
     uid: string,
     username: string,
     password: string,
+    isLogedin : boolean,
     _id: mongoose.Types.ObjectId,
     createdAt: Date,
     updatedAt: Date,

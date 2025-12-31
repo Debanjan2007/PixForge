@@ -22,12 +22,16 @@ export const verifyJwt = catchAsync(async (req : AuthRequest , res , next) => {
             return sendError(res , "Invalid token" , 401 , null)
         }   
         const tokenfromredis : string | null | undefined = await client?.get(`token-${decoded.uid}`)
-        if(typeof tokenfromredis !== undefined || typeof tokenfromredis !== null){
-            return sendError(res , "User has already loged out" , 401 , null )
+        console.log(tokenfromredis);        
+        if(tokenfromredis){
+            return sendError(res , "User has already been loged out" , 401 , null )
         }
         const user = await User.findOne({ uid : decoded.uid }) as unknown as dbuser;
         if(!user){
             return sendError(res , "User not found please sign up first" , 404 , null)
+        }
+        if(user.isLogedin === false){
+            return sendError(res , "User has been loged out" , 400 , null)
         }
         req.user = user;
         return next();

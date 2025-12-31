@@ -18,13 +18,14 @@ const genaccessToken = async function (uid: string): Promise<string | null | und
             return null;
         }
         const accessToken = await user.genToken();
-        console.log(accessToken);
         return accessToken;
     } catch (error) {
         console.log(error);
         return undefined;
     }
 }
+
+// please delete the token-uid from redis while logging in again 
 
 const reguser = catchAsync(async (req: Request, res: Response) => {
     try {
@@ -36,6 +37,8 @@ const reguser = catchAsync(async (req: Request, res: Response) => {
             return sendError(res, "username or password is not a string", 400, null)
         }
         const user = await User.create(userDetails)
+        user.isLogedin = true
+        await user.save({ validateBeforeSave: false })
         const accessToken = await genaccessToken(user.uid)
         console.log(accessToken);
         if (accessToken === null) {
@@ -68,10 +71,18 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
             return sendError(res, "username or password is not a string", 400, null)
         }
         const user: dbuser | null = await User.findOne({ username: userDetails.username }).select('-password -image')
-        console.log(user);
         if (!user) {
             return sendError(res, "User not found", 404, null)
         }
+        user.isLogedin = true
+        const revokedToken = await client?.get(`token-${user.uid}`)
+        console.log("holla : ",revokedToken);        
+        if(revokedToken){
+            console.log("got user");            
+            const del = await client?.del(`token-${user.uid}`)
+            console.log(del);            
+        }
+        await user.save({ validateBeforeSave: false })
         const accessToken = await genaccessToken(user.uid)
         if (accessToken === null) {
             return sendError(res, "User not found", 404, null)
@@ -231,17 +242,17 @@ const transformImageurl = catchAsync(async (req: AuthRequest, res: Response) => 
     if (req.body === undefined || req.body === null) {
         return sendError(res, "Transformation are not there please give transformations", 404, null)
     }
-    if(!req.params.id){
-        return sendError(res , "image id is not mentioned" , 404 , null)
+    if (!req.params.id) {
+        return sendError(res, "image id is not mentioned", 404, null)
     }
     try {
         const t: imagetransformoptions = req.body;
         const imageId = req.params.id
         const user = req.user as dbuser
         const image = await User.aggregate([
-            {   
-                $match : {
-                    "uid" : user.uid
+            {
+                $match: {
+                    "uid": user.uid
                 }
             },
             {
@@ -259,29 +270,45 @@ const transformImageurl = catchAsync(async (req: AuthRequest, res: Response) => 
                 }
             }
         ])
-        const transformedImage = transformImage(t , image[0].image.url)
-        user?.transformedImages?.push({url : transformedImage})
-        await user.save({validateBeforeSave : false})
-        return sendSuccess(res , transformedImage , "Image transformation done" , 200)
+        const transformedImage = transformImage(t, image[0].image.url)
+        user?.transformedImages?.push({ url: transformedImage })
+        await user.save({ validateBeforeSave: false })
+        return sendSuccess(res, transformedImage, "Image transformation done", 200)
     } catch (error) {
-        return sendError(res , "Internal server error" , 500 , null)
+        return sendError(res, "Internal server error", 500, null)
     }
 })
 // log out securely
-const logout = catchAsync(async (req: AuthRequest , res: Response) => {
-    const accessToken = req.cookies.accessToken ;
-    const rediskey : string = `token-${req.user?.uid}`
-    await client?.set(rediskey , accessToken , {
-        EX: 60 * 60 * 24 
-    })
-    res.clearCookie(accessToken)
-    return sendSuccess(res , null ,"user logout successfull" , 200)
+const logout = catchAsync(async (req: AuthRequest, res: Response) => {
+    const user = req.user as dbuser
+    try {
+        user.isLogedin = false
+        await user.save({ validateBeforeSave: false })
+        const accessToken = req.cookies.accessToken;
+        const rediskey: string = `token-${req.user?.uid}`
+        await client?.set(rediskey, accessToken, {
+            EX: 60 * 60 * 24
+        })
+        res.clearCookie(accessToken)
+        return sendSuccess(res, null, "user logout successfull", 200)
+    } catch (error) {
+        console.log(error);
+        return sendError(res, "internal server error", 500, null)
+    }
 })
 // delete account
-// const delacc = catchAsync(async (req: AuthRequest , res: Response) => {
-//     const user = req.user as dbuser ;
-    
-// })
+const delacc = catchAsync(async (req: AuthRequest, res: Response) => {
+    try {
+        const user = req.user as dbuser;
+        const accessToken = req.cookies.accessToken;
+        res.clearCookie(accessToken)
+        await User.findByIdAndDelete(user._id)
+        return sendSuccess(res , null , "Accoint has been deleted successfully" , 200)
+    } catch (error) {
+        console.log(error);        
+        return sendError(res , "internal server failure" , 500 , null)
+    }
+})
 export {
     reguser as reisterUser,
     loginUser,
@@ -289,5 +316,6 @@ export {
     getImageById,
     getImageList,
     transformImageurl,
-    logout
+    logout,
+    delacc
 }

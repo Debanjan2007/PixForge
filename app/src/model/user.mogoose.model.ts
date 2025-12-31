@@ -8,6 +8,7 @@ interface UserDocument extends mongoose.Document {
     username: string;
     password: string;
     uid: string;
+    isLogedin : boolean;
     image?: Array<{
         url: string,
         fieldId: string,
@@ -33,6 +34,9 @@ const userSchema = new mongoose.Schema<UserDocument>(
             required: true,
             unique: true,
             match: /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
+        },
+        isLogedin : {
+            type: Boolean
         },
         uid: {
             type: String,

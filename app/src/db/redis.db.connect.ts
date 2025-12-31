@@ -1,6 +1,8 @@
 import { createClient } from 'redis'
+import { Queue } from 'bullmq'
 
 let client: ReturnType<typeof createClient> | undefined
+let publisher = null
 
 const connectToClient = async (url: string) => {
     console.log('Connecting to Redis, url=', url);
@@ -16,6 +18,12 @@ const connectToClient = async (url: string) => {
 
     try {
         await client.connect()
+        publisher = new Queue('imagequeue' , {
+            connection:{
+                host: (client?.options.socket as any)?.host || 'localhost' ,
+                port: (client?.options.socket as any)?.port || 6379
+            }
+        })
         console.log('Redis client connected');
     } catch (err) {
         console.error('Failed to connect Redis:', err);
@@ -23,5 +31,6 @@ const connectToClient = async (url: string) => {
 }
 export {
     client,
-    connectToClient
+    connectToClient ,
+    publisher
 }
