@@ -48,7 +48,7 @@ const userSchema = new mongoose.Schema<UserDocument>(
             url: {
                 type: String
             },
-            fieldId: {
+            fieldId: { // this fieldid got from imagekit response object
                 type: String,
             },
             metadata: {

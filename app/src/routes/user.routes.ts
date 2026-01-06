@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { reisterUser , loginUser , imageUploader , getImageById , getImageList , transformImageurl , logout , delacc} from '../controller/users.controller.js'
 import { verifyJwt } from '../middleware/verifyjwt.middleware.js'
+import { delimage }  from '../controller/image.controller.js'
 
 export const router = Router() 
 import { upload } from '../middleware/fileupload.middleware.js'
@@ -16,3 +17,4 @@ router.get('/images' , verifyJwt , getImageList)
 router.patch('/images/:id/transform' , verifyJwt , transformImageurl)
 router.post('/logout', verifyJwt , logout)
 router.delete('/delete-account', verifyJwt , delacc)
+router.delete('/delete-image/:id', verifyJwt , delimage)

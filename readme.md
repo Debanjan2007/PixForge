@@ -1,26 +1,27 @@
 # Image Processing Service 🖼️
 
-A lightweight Express + TypeScript service for handling image uploads and processing using ImageKit and MongoDB.
+A lightweight Express + **TypeScript** service for handling image uploads, storage (ImageKit), and simple image transformations. It uses MongoDB for metadata and Redis for short-lived token handling.
 
 ---
 
 ## ✅ Quick overview
 
-- Language: **TypeScript**
-- Web framework: **Express**
-- Database: **MongoDB** (via Mongoose)
-- File uploads: **multer**
-- Image CDN: **ImageKit**
+- **Language:** TypeScript
+- **Framework:** Express
+- **Storage:** MongoDB (Mongoose)
+- **Uploads:** multer → ImageKit
+- **Queue / cache:** Redis (used for token revocation)
+- **Default HTTP port:** **5600**
 
 ---
 
 ## 🔧 Prerequisites
 
 - Node.js (recommended >= 18)
-- npm (comes with Node.js) or Yarn
-- Docker & Docker Compose (optional, recommended for local MongoDB)
+- npm or Yarn
+- Docker & Docker Compose (optional)
 
-> On Windows, ensure Docker Desktop is installed and running before using Docker compose.
+> On Windows, make sure Docker Desktop is running before using Docker Compose.
 
 ---
 
@@ -39,117 +40,175 @@ cd image-processor
 npm install
 ```
 
-3. Create a `.env` file in the project root (see **Environment** below).
+3. Create a `.env` file (see **Environment** below). For local development put the `.env` in `app/src` (the app loads `.env` relative to the compiled runtime).
+
+4. Build and run:
+
+```bash
+npm run build
+npm start
+# server will be available at http://localhost:5600
+```
+
+For faster iteration during development, consider adding a `dev` script that uses `ts-node-dev` or running `npm run build && npm run dev` (current `dev` script runs `nodemon` against the compiled `dist`).
 
 ---
 
 ## 🧩 Environment variables (.env)
 
-Create a `.env` with the variables your app needs. Example:
+Minimum recommended variables:
 
 ```env
 NODE_ENV=development
-MONGO_URI=mongodb://roadmap:roadmapimageprocess123@localhost:27017/?authSource=admin
-JWT_SECRET=your_jwt_secret_here
+MONGO_URI=mongodb://<user>:<pass>@localhost:27017/<dbname>?authSource=admin
+JWT_SECRET=your_jwt_secret
 IMAGEKIT_PUBLIC_KEY=
 IMAGEKIT_PRIVATE_KEY=
 IMAGEKIT_URL_ENDPOINT=
+REDIS_URL=redis://<host>:<port>
+REDIS_PASS=
 ```
 
-- When using the included Docker Compose, the `MONGO_URI` can point to `localhost:27017` (see `docker/docker-compose.yml`).
+- `MONGO_URI` — connection string to your MongoDB
+- `JWT_SECRET` — used to sign access tokens
+- `IMAGEKIT_*` — ImageKit credentials (private key used at runtime)
+- `REDIS_URL`, `REDIS_PASS` — used by Redis client in the app
 
 ---
 
-## ▶️ Available scripts
+## ▶️ Scripts
 
-- `npm run build` — compile TypeScript to `dist/` (uses `npx tsc`).
-- `npm start` — run the compiled app from `dist`.
-
-Tip: Add convenience scripts while developing (example):
-
-```json
-"scripts": {
-  "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-  "build": "npx tsc",
-  "start": "node ./dist/index.js",
-  "lint": "eslint . --ext .ts",
-  "format": "prettier --write ."
-}
-```
+- `npm run build` — compile TypeScript to `dist/`
+- `npm start` — run the compiled app from `dist/`
+- `npm run dev` — currently starts `nodemon` against `dist` (consider updating to `ts-node-dev` for true source-level dev)
 
 ---
 
-## 🐳 Run with Docker (local MongoDB)
+## 🐳 Docker
 
-Start DB & admin UI from the provided compose file:
+Build the production image and run locally:
+
+```bash
+docker build -t image-processing:latest .
+docker run -p 5600:5600 --env-file ./path/to/.env image-processing:latest
+```
+
+The included Dockerfile exposes port **5600** and creates an `uploads` folder in the built image (used temporarily during uploads).
+
+To start the bundled MongoDB + UI (Mongo Express) for local testing, use the provided compose in `docker/`:
 
 ```bash
 cd docker
 docker-compose up -d
+# Mongo on 27017, Mongo Express UI on http://localhost:8081
 ```
-
-- Mongo will be available on port `27017`.
-- Mongo Express UI will be available on `http://localhost:8081`.
-
-After starting the DB, set `MONGO_URI` to the connection string shown in the example `.env`.
 
 ---
 
-## 📦 Package guidance
+## 🧭 HTTP API (routes)
 
-- Add runtime dependencies with:
+Base path: `http://localhost:5600/api/v1`
+
+All `/user` endpoints are mounted under `/api/v1/user` and most require a valid access token (cookie `accessToken`) set by login/registration.
+
+- POST `/api/v1/user/register` — Register a new user
+  - Body (JSON): `{ "username": "string", "password": "string" }`
+  - Response: `201` with `{ accessToken, user }` and `accessToken` set as an HTTP-only cookie
+
+- POST `/api/v1/user/login` — Login
+  - Body (JSON): `{ "username": "string", "password": "string" }`
+  - Response: `200` with `{ accessToken, user }` and cookie
+
+- POST `/api/v1/user/upload-image` — Upload image (protected)
+  - Auth: cookie `accessToken`
+  - Form: `multipart/form-data` field name: `image` (file)
+  - Response: `200` with `{ url, id }`
+
+- GET `/api/v1/user/images` — List images (protected)
+  - Query: `?page=1&limit=10`
+
+- GET `/api/v1/user/images/:id` — Get image metadata by ImageKit file id (protected)
+
+- PATCH `/api/v1/user/images/:id/transform` — Transform image (protected)
+  - Body (JSON): uses the shape below (see `image.types.ts`):
+
+```json
+{
+  "transformations": {
+    "resize": { "width": 200, "height": 200 },
+    "format": "jpg"
+  }
+}
+```
+
+- DELETE `/api/v1/user/delete-image/:id` — Delete image from user's metadata (protected)
+- POST `/api/v1/user/logout` — Logout (protected)
+- DELETE `/api/v1/user/delete-account` — Delete user account (protected)
+
+Healthcheck endpoint (note):
+
+- GET `/api/v1/heathcheck` — returns "Healthcheck OK"
+  - Important: this route is implemented as `/heathcheck` (missing the 'l'). If you want, I can fix it to `/healthcheck` in a follow-up change.
+
+---
+
+## 🔁 Upload & image flow
+
+- Uploads are first stored on disk by `multer` then forwarded to **ImageKit**.
+- After successful upload to ImageKit, the local temp file is removed.
+- Metadata (file id, url, dimensions) is stored in MongoDB under the user document.
+
+---
+
+## 🔧 Examples (curl)
+
+Register and save cookie:
 
 ```bash
-npm install <package-name>
-# or
-npm i <package-name>
+curl -i -c cookies.txt -H "Content-Type: application/json" \
+  -d '{"username":"alice","password":"secret"}' \
+  http://localhost:5600/api/v1/user/register
 ```
 
-- Add development-only dependencies with:
+Login and save cookie:
 
 ```bash
-npm install -D <package-name>
-# or
-npm i -D <package-name>
+curl -i -c cookies.txt -H "Content-Type: application/json" \
+  -d '{"username":"alice","password":"secret"}' \
+  http://localhost:5600/api/v1/user/login
 ```
 
-- Recommended dev tools for this repo:
-  - `typescript`, `ts-node-dev` or `nodemon` (fast dev restart)
-  - `eslint`, `prettier` (code quality & formatting)
-  - `@types/*` for packages that need TypeScript types
+Upload an image using the saved cookie:
 
-- Keep dependencies up-to-date:
-  - `npm outdated` to see outdated packages
-  - `npm audit` to spot security issues
-  - `npm update` to update minor/patch versions
+```bash
+curl -X POST -b cookies.txt -F "image=@/path/to/photo.jpg" \
+  http://localhost:5600/api/v1/user/upload-image
+```
 
----
+Request a transformed image:
 
-## 🧪 Testing & Linting
-
-- There are no tests in the repo yet; we recommend using Jest + ts-jest for unit tests.
-- Add `eslint` + `prettier` configs and scripts to keep a consistent code style.
+```bash
+curl -X PATCH -H "Content-Type: application/json" -b cookies.txt \
+  -d '{"transformations":{"resize":{"width":200,"height":200}}}' \
+  http://localhost:5600/api/v1/user/images/<fileId>/transform
+```
 
 ---
 
-## 🔍 Troubleshooting
+## 🚧 Notes & TODOs
 
-- If TypeScript build fails, run `npx tsc --noEmit` to see errors.
-- If Mongo connection fails while using Docker, ensure `docker-compose` is up and ports are not blocked by Windows firewall.
+- Consider fixing the healthcheck route name from `/heathcheck` → `/healthcheck`.
+- Add unit tests (Jest + ts-jest) and integration tests for endpoints.
+- Improve the `dev` script to use `ts-node-dev` for an in-source dev loop.
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork the repo
-2. Create a feature branch
-3. Add tests and keep code style consistent
-4. Open a pull request with a clear description of your change
+Contributions are welcome — please open a PR with tests and a clear description.
 
 ---
 
 ## 📄 License
 
 This repository is currently licensed under **ISC** (see `package.json`).
-
----

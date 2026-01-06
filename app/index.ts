@@ -1,5 +1,5 @@
 import app from './app.js'
-import { connectDB , getDBStatus } from 'devdad-express-utils'
+import { connectDB, getDBStatus } from 'devdad-express-utils'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -13,11 +13,10 @@ dotenv.config({ path: path.join(__dirname, '.env') })
 
 
 const port = 5600;
-
 connectDB().then(async () => {
     const dbStatus = getDBStatus()
-    console.log(`Mongodb connected on ${dbStatus.host}`); 
-    await connectToClient(process.env.REDIS_URL as string)
+    console.log(`Mongodb connected on ${dbStatus.host}`);
+    await connectToClient(process.env.REDIS_URL as string, process.env.REDIS_PASS as string)
     app.listen(port, () => {
         connectImageKit(process.env.IMAGEKIT_PRIVATE_KEY as string)
         console.log(`Server is running at http://localhost:${port}`);
