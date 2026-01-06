@@ -1,14 +1,14 @@
-import ImageKit from "@imagekit/nodejs";
+import ImageKit from "imagekit";
 
-let imagekitClient: ImageKit | null = null
 
-const connectImageKit = (privatekey: string) => {
-    imagekitClient = new ImageKit({
-        privateKey: privatekey
+const connectImageKit = (pubkey: string , privatekey: string , urlEndpoint: string) => {
+    return new ImageKit({
+        publicKey: pubkey,
+        privateKey: privatekey,
+        urlEndpoint: urlEndpoint
     })
 }
 
 export {
-    imagekitClient,
     connectImageKit
 }

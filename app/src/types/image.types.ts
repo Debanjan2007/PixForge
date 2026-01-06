@@ -1,33 +1,33 @@
-export interface imagemetadata {
-    name: string,
+export type imagemetadata = {
+    name: string;
     versionInfo: {
-        id: string,
+        id: string;
         name: string
     },
-    filepath: string,
-    fileType: string,
+    filepath: string;
+    fileType: string;
     dimensions: {
-        width: number,
+        width: number;
         height: number
     },
     thumbnailUrl: string
 }
-export interface imagetransformoptions {
+export type imagetransformoptions = {
     "transformations": {
         "resize"?: {
-            "width"?: number,
+            "width"?: number;
             "height"?: number
         },
         "crop"?: {
-            "width"?: number,
-            "height"?: number,
-            "x": number,
+            "width"?: number;
+            "height"?: number;
+            "x": number;
             "y": number
         },
-        "rotate"?: number,
-        "format"?: string,
+        "rotate"?: number;
+        "format"?: string;
         "filters"?: {
-            "grayscale": boolean,
+            "grayscale": boolean;
             "sepia": boolean
         }
     }

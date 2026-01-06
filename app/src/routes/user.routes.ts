@@ -2,9 +2,12 @@ import { Router } from 'express'
 import { reisterUser , loginUser , imageUploader , getImageById , getImageList , transformImageurl , logout , delacc} from '../controller/users.controller.js'
 import { verifyJwt } from '../middleware/verifyjwt.middleware.js'
 import { delimage }  from '../controller/image.controller.js'
+import multer from 'multer'
 
 export const router = Router() 
-import { upload } from '../middleware/fileupload.middleware.js'
+
+const storage = multer.memoryStorage()
+const upload = multer({storage: storage})
 
 // unsafe routes
 router.post('/register' , reisterUser)

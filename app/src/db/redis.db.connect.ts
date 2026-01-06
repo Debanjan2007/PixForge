@@ -40,7 +40,10 @@ const connectToClient = async (url: string , redisPass: string) => {
             console.log(job.name , job.data);
             switch (job.name) {
                 case 'delimage':
-                    await delimageHandle(job.data as string)
+                    const imgdeleted = await delimageHandle(job.data as string)
+                    if(imgdeleted === false){
+                        throw new Error("image isn't deleted yet")
+                    }
                     break;
                 default:
                     console.log("helo");
@@ -65,8 +68,8 @@ const connectToClient = async (url: string , redisPass: string) => {
         worker.on('completed' , () => {
             console.log("Job is done");            
         })
-        worker.on('failed' , () => {
-            console.log("job is failed!");            
+        worker.on('failed' , (err) => {
+            console.log("job is failed!" , err);            
         })
         console.log('Redis client connected');
     } catch (err) {

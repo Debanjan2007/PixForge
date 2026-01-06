@@ -1,8 +1,7 @@
 import { catchAsync, sendSuccess, sendError } from 'devdad-express-utils'
 import { User } from '../model/user.mogoose.model.js'
 import fs from 'fs'
-import { imagekitClient } from '../utils/imagekit.conf.js'
-import ImageKit from '@imagekit/nodejs';
+import { imagekitClient } from '../../index.js'
 import type { Request, Response } from 'express'
 import type { dbuser, user } from '../types/api.types.js'
 import type { imagemetadata } from '../types/image.types.js'
@@ -76,11 +75,11 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
         }
         user.isLogedin = true
         const revokedToken = await client?.get(`token-${user.uid}`)
-        console.log("holla : ",revokedToken);        
-        if(revokedToken){
-            console.log("got user");            
+        console.log("holla : ", revokedToken);
+        if (revokedToken) {
+            console.log("got user");
             const del = await client?.del(`token-${user.uid}`)
-            console.log(del);            
+            console.log(del);
         }
         await user.save({ validateBeforeSave: false })
         const accessToken = await genaccessToken(user.uid)
@@ -115,35 +114,29 @@ const imageUploader = catchAsync(async (req: AuthRequest, res: Response) => {
         if (!req.file) {
             return sendError(res, "No file uploaded", 400, null)
         }
-        const params: ImageKit.FileUploadParams = {
-            file: fs.createReadStream(`${req.file.path}`),
-            fileName: `${req.file.originalname}`,
-        };
-        if (!imagekitClient) {
-            return sendError(res, "Imagekit not connected", 500, null)
+        console.log(req.file.buffer);
+        if (!imagekitClient || imagekitClient === null) {
+            throw new Error("Imagekitclient not found")
         }
-        const response: ImageKit.FileUploadResponse = await imagekitClient.files.upload(params);
-        // delete the file from local storage
-        fs.unlinkSync(req.file.path);
-        if (response === null || response === undefined) {
-            return sendError(res, "Error uploading image", 500, null)
-        }
+        // @ts-ignore
+        const {name , url , fileId , versionInfo ,  filePath , fileType , height , width , thumbnailUrl}   = await imagekitClient.upload({
+            file: req.file.buffer,
+            fileName: req.file.originalname
+        })      
         const metadata: imagemetadata = {
-            name: `${response.name}`,
+            name: name,
             versionInfo: {
-                id: `${response.versionInfo?.id || ''}`,
-                name: `${response.versionInfo?.name || ''}`
+                id: `${versionInfo?.id || ''}`,
+                name: `${versionInfo?.name || ''}`
             },
-            filepath: `${response.filePath}`,
-            fileType: `${response.fileType}`,
+            filepath: `${filePath}`,
+            fileType: `${fileType}`,
             dimensions: {
-                width: response.width ? response.width : 0,
-                height: response.height ? response.height : 0
+                width: width ? width : 0,
+                height: height ? height : 0
             },
-            thumbnailUrl: `${response.thumbnailUrl}`
+            thumbnailUrl: `${thumbnailUrl}`
         }
-        console.log(metadata);
-        console.log(`user : ${req.user}`);
         const user = req.user;
         if (!user || !user.uid) {
             return sendError(res, "User not authenticated", 401, null)
@@ -153,15 +146,15 @@ const imageUploader = catchAsync(async (req: AuthRequest, res: Response) => {
             {
                 $push: {
                     image: {
-                        url: response.url,
-                        fieldId: response.fileId,
+                        url: url,
+                        fieldId: fileId,
                         metadata: metadata
                     }
                 }
             },
             { new: true }
         )
-        return sendSuccess(res, { url: response.url, id: response.fileId }, "Image uploaded successfully", 200)
+        return sendSuccess(res, { url: url, id: fileId }, "Image uploaded successfully", 200)
     } catch (error) {
         console.log(error);
         return sendError(res, "Internal server error", 500, null)
@@ -303,10 +296,10 @@ const delacc = catchAsync(async (req: AuthRequest, res: Response) => {
         const accessToken = req.cookies.accessToken;
         res.clearCookie(accessToken)
         await User.findByIdAndDelete(user._id)
-        return sendSuccess(res , null , "Accoint has been deleted successfully" , 200)
+        return sendSuccess(res, null, "Accoint has been deleted successfully", 200)
     } catch (error) {
-        console.log(error);        
-        return sendError(res , "internal server failure" , 500 , null)
+        console.log(error);
+        return sendError(res, "internal server failure", 500, null)
     }
 })
 export {
