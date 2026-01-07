@@ -1,16 +1,16 @@
 import { imagekitClient } from '../index.js'
-const delimageHandle = async(fieldId : string )=> {
+const delimageHandle = async (filedId: string) => {
+    if (!imagekitClient || imagekitClient === null) {
+        console.log("Imagekit clent not found")
+        throw new Error("Imagekitclient not found")
+    }
     try {
-        if(!imagekitClient || imagekitClient === null){
-            throw new Error("Imagekitclient not found")
-        }
-        const delimages = await imagekitClient.deleteFile(fieldId)
-        console.log(delimages);        
+        await imagekitClient.deleteFile(filedId as string)
         return true
     } catch (error) {
         console.log(error);
-        return error      
-    }       
+        throw new Error("Something went wrong", { cause: error })
+    }
 }
 
 

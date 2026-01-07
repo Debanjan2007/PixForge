@@ -37,10 +37,9 @@ const connectToClient = async (url: string , redisPass: string) => {
             console.log(`Error occured while queue jobs ${err}`);
         })
         worker = new Worker('imagequeue', async (job: Job) => {
-            console.log(job.name , job.data);
             switch (job.name) {
                 case 'delimage':
-                    const imgdeleted = await delimageHandle(job.data as string)
+                    const imgdeleted = await delimageHandle(job.data.fieldId as string)
                     if(imgdeleted === false){
                         throw new Error("image isn't deleted yet")
                     }
