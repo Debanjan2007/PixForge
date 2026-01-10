@@ -1,6 +1,6 @@
 import { createClient } from 'redis'
 import { Queue, Worker, Job } from 'bullmq'
-import { delimageHandle } from '../../queue/queue.worker.controller.js'
+import { delimageHandle , deleAllFiles } from '../../queue/queue.worker.controller.js'
 
 let client: ReturnType<typeof createClient> | undefined
 let publisher : Queue | null = null
@@ -39,11 +39,11 @@ const connectToClient = async (url: string , redisPass: string) => {
         worker = new Worker('imagequeue', async (job: Job) => {
             switch (job.name) {
                 case 'delimage':
-                    const imgdeleted = await delimageHandle(job.data.fieldId as string)
-                    if(imgdeleted === false){
-                        throw new Error("image isn't deleted yet")
-                    }
+                    await delimageHandle(job.data.fieldId as string)
                     break;
+                case 'delAllimage':
+                    await deleAllFiles(job.data.imagesArray as Array<any>)
+                    break ;
                 default:
                     console.log("helo");
                     break;

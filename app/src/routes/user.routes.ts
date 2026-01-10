@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { reisterUser , loginUser , imageUploader , getImageById , getImageList , transformImageurl , logout , delacc} from '../controller/users.controller.js'
 import { verifyJwt } from '../middleware/verifyjwt.middleware.js'
-import { delimage }  from '../controller/image.controller.js'
+import { delimage , removeAllFiles }  from '../controller/image.controller.js'
 import multer from 'multer'
 
 export const router = Router() 
@@ -20,4 +20,5 @@ router.get('/images' , verifyJwt , getImageList)
 router.patch('/images/:id/transform' , verifyJwt , transformImageurl)
 router.post('/logout', verifyJwt , logout)
 router.delete('/delete-account', verifyJwt , delacc)
-router.delete('/delete-image/:id', verifyJwt , delimage)
+router.delete('/images/delete-image/:id', verifyJwt , delimage)
+router.delete('/images/delete-all', verifyJwt , removeAllFiles)

@@ -57,6 +57,39 @@ const delimage = catchAsync(async (req: AuthRequest, res: Response) => {
         sendError(res, "internal server error", 500, null)
     }
 })
+
+const removeAllFiles = catchAsync(async (req: AuthRequest, res: Response) => {
+    try {
+        const user = req.user as dbuser
+        const images = await User.aggregate([
+            {
+                $match: {
+                    "uid" : user.uid
+                }
+            },
+            {
+                $project : {
+                    image: 1
+                }
+            }
+        ])
+        console.log(images[0].image);        
+        await User.updateOne(
+            { uid: user.uid },
+                {
+                    $set : {
+                        image: []
+                    }
+                }
+        )
+        publisher?.add('delAllimage' , { imagesArray : images[0].image})
+        return sendSuccess(res , null , "All images have been delted" , 200 )
+    } catch (error) {
+        console.log(error);        
+        return sendError(res, "Something went wrong", 500, null)
+    }
+})
 export {
-    delimage
+    delimage,
+    removeAllFiles
 }
