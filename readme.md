@@ -208,7 +208,5 @@ curl -X PATCH -H "Content-Type: application/json" -b cookies.txt \
 Contributions are welcome — please open a PR with tests and a clear description.
 
 ---
-
-## 📄 License
-
-This repository is currently licensed under **ISC** (see `package.json`).
+## Roadmap.sh 
+[roadmap.sh](https://roadmap.sh/projects/image-processing-service)
