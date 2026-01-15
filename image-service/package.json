@@ -1,0 +1,16 @@
+{
+  "name": "image-processor-service",
+  "version": "2.0.0",
+  "description": "Devidev the previous monolithic architecture into different image processor microservice",
+  "license": "ISC",
+  "author": "Debanjan Das",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.9",
+    "typescript": "^5.9.3"
+  }
+}
