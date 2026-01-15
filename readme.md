@@ -25,6 +25,25 @@ A lightweight Express + **TypeScript** service for handling image uploads, stora
 
 ---
 
+## Architecture Overview
+
+This project follows a microservice-based design:
+
+- Auth Service → Authentication & token validation
+- Image Service → Upload handling & metadata
+- Object Storage (S3/MinIO) → Binary image storage
+- Queue (BullMQ) → Async job dispatch
+- Worker → Image processing
+- CDN → Static image delivery
+
+Key properties:
+- Stateless services
+- No shared databases
+- Async processing for heavy tasks
+- Object storage for scalability
+- CDN for performance
+---
+
 ## 📥 Installation
 
 1. Clone the repository:
