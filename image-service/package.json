@@ -16,14 +16,17 @@
     "@types/imagekit": "^3.1.5",
     "@types/mongoose": "^5.11.96",
     "@types/node": "^25.0.9",
+    "axios": "^1.13.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@types/multer": "^2.0.0",
     "cookie-parser": "^1.4.7",
     "devdad-express-utils": "^1.8.2",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "imagekit": "^6.0.0",
-    "mongoose": "^9.1.4"
+    "mongoose": "^9.1.4",
+    "multer": "^2.0.2"
   }
 }
