@@ -1,4 +1,4 @@
-import { imagekitClient } from '../index.js'
+import { imagekitClient } from '../../auth/app/index.js'
 const delimageHandle = async (filedId: string) => {
     if (!imagekitClient || imagekitClient === null) {
         console.log("Imagekit client not found")

@@ -49,7 +49,8 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.genToken = async function () {
     const payload = {
         uid: this.uid,
-        username: this.username
+        username: this.username,
+        logedIn: this.isLogedin
     }
     return jwt.sign(
         payload,

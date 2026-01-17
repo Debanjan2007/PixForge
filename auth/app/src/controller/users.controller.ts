@@ -135,9 +135,17 @@ const delacc = catchAsync(async (req: AuthRequest, res: Response) => {
         return sendError(res, "internal server failure", 500, null)
     }
 })
+// validate the user for image processiing service
+const validateUser = catchAsync(async (req: AuthRequest , res) => {
+    if(!(req.user as dbuser)){
+        return sendError(res , "User not found or user must be logedout" , 404 , null)
+    }
+    return sendSuccess(res , {user: req.user} , "User validation successfull" , 200)
+})
 export {
     reguser as reisterUser,
     loginUser,
     logout,
-    delacc
+    delacc,
+    validateUser
 }

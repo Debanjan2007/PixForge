@@ -3,6 +3,7 @@ import { connectDB, getDBStatus } from 'devdad-express-utils'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { connectToClient } from './src/db/redis.db.connect.js'
 
 const __filename = fileURLToPath(import.meta.url)
 export const __dirname = path.dirname(__filename)
@@ -11,9 +12,12 @@ dotenv.config({ path: path.join(__dirname, '.env') })
 
 
 const port = 5600;
+console.log(path.join(__dirname, '.env'));
+
 connectDB().then(async () => {
     const dbStatus = getDBStatus()
     console.log(`Mongodb connected on ${dbStatus.host}`);
+    await connectToClient()
     app.listen(port, () => {
         console.log(`Server is running at http://localhost:${port}`);
     })

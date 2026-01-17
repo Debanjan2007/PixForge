@@ -20,9 +20,8 @@ export const verifyJwt = catchAsync(async (req : AuthRequest , res , next) => {
         const decoded = jwt.verify(token , secret) as JwtPayload ;
         if(!decoded){
             return sendError(res , "Invalid token" , 401 , null)
-        }   
+        }
         const tokenfromredis : string | null | undefined = await client?.get(`token-${decoded.uid}`)
-        console.log(tokenfromredis);        
         if(tokenfromredis){
             return sendError(res , "User has already been loged out" , 401 , null )
         }
