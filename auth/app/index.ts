@@ -1,5 +1,5 @@
 import app from './app.js'
-import { connectDB, getDBStatus } from 'devdad-express-utils'
+import { connectDB } from 'devdad-express-utils'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -15,8 +15,6 @@ const port = 5600;
 console.log(path.join(__dirname, '.env'));
 
 connectDB().then(async () => {
-    const dbStatus = getDBStatus()
-    console.log(`Mongodb connected on ${dbStatus.host}`);
     await connectToClient()
     app.listen(port, () => {
         console.log(`Server is running at http://localhost:${port}`);
