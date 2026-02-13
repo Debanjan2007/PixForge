@@ -1,0 +1,71 @@
+# ci pipeline for auth service
+name: auth-ci
+on: 
+    push:
+        branches:
+            - main
+        paths:
+            - 'auth/**'
+    pull_request:
+        branches:
+            - main
+        paths:
+            - 'auth/**'
+jobs:
+    build: 
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: ./auth
+        steps:
+            - name: setup node
+              uses: actions/setup-node@v4
+            - name: checkout the code
+              uses: actions/checkout@v4
+            - name: build the ts files
+              run: npm run build 
+            - name: storing the build files as artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                name: auth-build
+                path: |
+                    ./dist/**
+                    ./package.json
+    test:
+        needs: build
+        runs-on: ubuntu-latest
+        env:
+            MONGODB_USERNAME: ${{secrets.MONGODB_USERNAME}}
+            MONGODB_PASSWORD: ${{secrets.MONGODB_PASSWORD}}
+            MONGOUI_UI_USERNAME: ${{secrets.MONGOUI_UI_USERNAME}}
+            MONGO_UI_PASSWORD: ${{secrets.MONGO_UI_PASSWORD}}
+            REDIS_PASS: ${{secrets.REDIS_PASS}}
+        defaults:
+            run:
+                working-directory: ./auth
+        steps:
+            - name: setup node
+              uses: actions/setup-node@v4
+            - name: download the build files
+              uses: actions/download-artifact@v4
+              with:
+                name: auth-build
+            - name: install dependencies
+              run: npm install --omit=dev
+            - name: start docker compose
+              run: cd docker && docker compose up -d
+            - name: wait for app to be up and running
+              run: sleep 20
+            - name: starting the server
+              run: npm start
+            - name: wait for server to be healthy
+              run: sleep 5
+            - name: checking if app is running
+              run: |
+                STATUS=$(curl -s -o /dev/null -w "%http_code}" http://localhost:5000/api/v1/health)
+                if [ "$STATUS" -ne 200 ]; then
+                  echo "Health check failed"
+                  exit 1
+            - name: cleanup
+              if: always()
+              run: cd docker && docker compose down            
