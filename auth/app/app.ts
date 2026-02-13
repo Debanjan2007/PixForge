@@ -13,4 +13,4 @@ app.use(errorHandler)
 app.use('/api/v1/user', user)
 app.use('/api/v1', healthcheck)
 
-export default app // for testing purposes
+export default app
