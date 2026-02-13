@@ -33,9 +33,10 @@ jobs:
               with:
                 name: auth-build
                 path: |
-                    dist/**
+                    dist/
                     package.json
-                    docker/**
+                    package-lock.json
+                    docker/
     test:
         needs: build
         runs-on: ubuntu-latest
