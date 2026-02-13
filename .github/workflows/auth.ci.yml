@@ -22,6 +22,8 @@ jobs:
               uses: actions/setup-node@v4
             - name: checkout the code
               uses: actions/checkout@v4
+            - name: install dependencies
+              run: npm install
             - name: build the ts files
               run: npm run build 
             - name: storing the build files as artifacts
