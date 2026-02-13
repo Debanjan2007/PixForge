@@ -3,6 +3,7 @@ import { v4 as uuid } from 'uuid'
 import { hash } from 'bcrypt'
 import jwt, { type Secret } from 'jsonwebtoken'
 
+// TODO: add email and phone number to the user model and add validation for them
 interface UserDocument extends mongoose.Document {
     username: string;
     password: string;
