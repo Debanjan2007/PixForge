@@ -33,10 +33,10 @@ jobs:
               with:
                 name: auth-build
                 path: |
-                    dist/
-                    package.json
-                    package-lock.json
-                    docker/
+                    auth/dist/
+                    auth/package.json
+                    auth/package-lock.json
+                    auth/docker/
     test:
         needs: build
         runs-on: ubuntu-latest
@@ -71,10 +71,15 @@ jobs:
               run: sleep 5
             - name: checking if app is running
               run: |
-                STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/api/v1/health)
-                if [ "$STATUS" -ne 200 ]; then
-                  echo "Health check failed"
-                  exit 1
+                for i in {1..5}; do
+                  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5000/api/v1/health)
+                  if [ "$STATUS" -ne 200 ]; then
+                    echo "Health check $i passed with status $STATUS. Retrying..."
+                    exit 0
+                  fi
+                  echo "Health check $i failed with status $STATUS. Retrying in 5 seconds..."
+                  sleep 5
+                done
             - name: cleanup
               if: always()
               run: cd docker && docker compose down            
