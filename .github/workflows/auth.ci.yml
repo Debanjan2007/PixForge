@@ -33,10 +33,10 @@ jobs:
               with:
                 name: auth-build
                 path: |
-                    auth/dist/
+                    auth/dist/**
                     auth/package.json
                     auth/package-lock.json
-                    auth/docker/
+                    auth/docker/**
             - name: debug
               run: ls -R 
     test:
@@ -61,6 +61,7 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                 name: auth-build
+                path: auth/dist
             - name: debug files
               run: | 
                 echo "PWD:" 
