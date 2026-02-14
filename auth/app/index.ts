@@ -7,7 +7,7 @@ import { connectToClient } from './src/db/redis.db.connect.js'
 
 const __filename = fileURLToPath(import.meta.url)
 export const __dirname = path.dirname(__filename)
-// load the .env file located in src/
+// load the .env file located in src/ folder
 dotenv.config({ path: path.join(__dirname, '.env') })
 
 
