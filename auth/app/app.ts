@@ -1,4 +1,4 @@
-import express from 'express' // importing express
+import express from 'express' // importin
 import { errorHandler } from "devdad-express-utils";
 import { router as user} from './src/routes/user.routes.js'
 import { router as healthcheck} from './src/routes/healthcheck.routes.js'
