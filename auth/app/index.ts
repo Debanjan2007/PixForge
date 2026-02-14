@@ -17,7 +17,7 @@ console.log(path.join(__dirname, '.env'));
 connectDB().then(async () => {
     await connectToClient()
     app.listen(port, () => {
-        console.log(`Server is running at http://localhost:${port}`);
+        console.log(`Server is running at http://localhost:${port}`); // starting the server
     })
 }).catch((err) => {
     console.error('Startup failed:', err);
