@@ -80,7 +80,7 @@ jobs:
             - name: checking if the docker containers are running 
               run: docker ps -a
             - name: starting the server
-              run: npm start & # start the server in the background
+              run: npm ci & # start the server in the background
             - name: wait for server to be healthy
               run: sleep 5
             - name: checking if app is running
