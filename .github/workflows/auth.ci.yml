@@ -65,6 +65,8 @@ jobs:
               run: | 
                 echo "PWD:" 
                 pwd
+                echo "directories: " 
+                ls
             - name: install dependencies
               run: npm install --omit=dev
             - name: start docker compose
