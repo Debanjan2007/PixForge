@@ -38,7 +38,7 @@ jobs:
                     auth/package-lock.json
                     auth/docker/
             - name: debug
-              run: ls -R /dist && ls -R /docker
+              run: ls -R 
     test:
         needs: build
         runs-on: ubuntu-latest
