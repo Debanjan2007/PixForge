@@ -69,7 +69,7 @@ jobs:
                 echo "directories: " 
                 ls
                 cd dist
-                echo "directory inside dist: "
+                echo "directory inside dist:"
                 ls -R
             - name: install dependencies
               run: npm install --omit=dev
