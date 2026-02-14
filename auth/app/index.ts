@@ -11,7 +11,7 @@ export const __dirname = path.dirname(__filename)
 dotenv.config({ path: path.join(__dirname, '.env') })
 
 
-const port = 5600;
+const port = 5000; // You can also use process.env.PORT if you want to set the port via environment variables
 console.log(path.join(__dirname, '.env'));
 
 connectDB().then(async () => {
