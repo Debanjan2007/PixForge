@@ -61,6 +61,10 @@ jobs:
               uses: actions/download-artifact@v4
               with:
                 name: auth-build
+            - name: debug files
+              run: | 
+                echo "PWD:" 
+                pwd
             - name: install dependencies
               run: npm install --omit=dev
             - name: start docker compose
