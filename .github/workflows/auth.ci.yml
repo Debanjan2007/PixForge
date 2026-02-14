@@ -74,6 +74,8 @@ jobs:
               run: cd docker && docker compose up -d
             - name: wait for app to be up and running
               run: sleep 20
+            - name: checking if the docker containers are running 
+              run: docker ps -a
             - name: starting the server
               run: npm start & # start the server in the background
             - name: wait for server to be healthy
