@@ -1,6 +1,5 @@
 import { catchAsync, sendSuccess, sendError } from 'devdad-express-utils'
 import { User } from '../model/user.mogoose.model.js'
-import fs from 'fs'
 import type { Request, Response } from 'express'
 import type { dbuser, user } from '../types/api.types.js'
 import { client } from '../db/redis.db.connect.js'
@@ -35,7 +34,6 @@ const reguser = catchAsync(async (req: Request, res: Response) => {
         user.isLogedin = true
         await user.save({ validateBeforeSave: false })
         const accessToken = await genaccessToken(user.uid)
-        console.log(accessToken);
         if (accessToken === null) {
             return sendError(res, "User not found", 404, null)
         } else if (accessToken === undefined) {
@@ -71,11 +69,9 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
         }
         user.isLogedin = true
         const revokedToken = await client?.get(`token-${user.uid}`)
-        console.log("holla : ", revokedToken);
         if (revokedToken) {
-            console.log("got user");
+            console.log(`Revoked token found for user ${user.uid}, deleting from Redis. ${revokedToken}`);            
             const del = await client?.del(`token-${user.uid}`)
-            console.log(del);
         }
         await user.save({ validateBeforeSave: false })
         const accessToken = await genaccessToken(user.uid)
@@ -129,7 +125,7 @@ const delacc = catchAsync(async (req: AuthRequest, res: Response) => {
         const accessToken = req.cookies.accessToken;
         res.clearCookie(accessToken)
         await User.findByIdAndDelete(user._id)
-        return sendSuccess(res, null, "Accoint has been deleted successfully", 200)
+        return sendSuccess(res, null, "Account has been deleted successfully", 200)
     } catch (error) {
         console.log(error);
         return sendError(res, "internal server failure", 500, null)
@@ -143,7 +139,7 @@ const validateUser = catchAsync(async (req: AuthRequest , res) => {
     return sendSuccess(res , {user: req.user} , "User validation successfull" , 200)
 })
 export {
-    reguser as reisterUser,
+    reguser as registerUser,
     loginUser,
     logout,
     delacc,

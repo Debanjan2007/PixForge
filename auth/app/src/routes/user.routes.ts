@@ -1,11 +1,11 @@
 import { Router } from 'express'
-import { reisterUser , loginUser , logout , delacc , validateUser} from '../controller/users.controller.js'
+import { registerUser , loginUser , logout , delacc , validateUser} from '../controller/users.controller.js'
 import { verifyJwt } from '../middleware/verifyjwt.middleware.js'
 
 export const router = Router() 
 
 // unsafe routes
-router.post('/register' , reisterUser)
+router.post('/register' , registerUser)
 router.post('/login' , loginUser)
 
 // safe routes
