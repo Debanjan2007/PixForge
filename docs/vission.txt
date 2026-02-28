@@ -1,0 +1,1 @@
+this microservice set up is still not too good. The image service is still tightly coupled to auth service as the validation checks from auth servic.
