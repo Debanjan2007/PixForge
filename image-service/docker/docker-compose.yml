@@ -1,0 +1,30 @@
+name: image-processor-microservice
+version: 1.0.0
+services:
+  cache : 
+    image: redis:7.2-alpine
+    container_name: redis_image_service
+    ports:
+      - 6378:6379
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASS}
+    command: ["redis-server", "--requirepass", "${REDIS_PASS}"]
+    volumes:
+      - redis_roadmap_image_service_db:/data
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web console
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USERNAME}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    restart: unless-stopped
+
+volumes:
+  minio-data:
+  redis_roadmap_image_service_db:

@@ -1,4 +1,4 @@
-import type { imagetransformoptions } from '../types/image.types.js'
+import type { imagetransformoptions } from  '../types/image.types.js'
 
 const transformImage = (t: imagetransformoptions, url: string) : string => {
     const transformations: Array<string> = []

@@ -1,9 +1,10 @@
-// import { catchAsync, sendError, sendSuccess } from 'devdad-express-utils'
-// import type { Request, Response } from 'express'
-// import type { dbuser, user } from '../types/api.types.js'
-// import type { AuthRequest } from './users.controller.js'
-// import { User } from '../model/user.mogoose.model.js'
-// import { publisher } from '../db/redis.db.connect.js'
+import { catchAsync, sendError, sendSuccess } from 'devdad-express-utils'
+import type { Request, Response } from 'express'
+import type { dbuser } from '../types/api.types.js'
+
+// image uploading
+const imageUploader = catchAsync(async (req: Request , res: Response) => {
+})
 
 // const delimage = catchAsync(async (req: AuthRequest, res: Response) => {
 //     try {
@@ -89,58 +90,7 @@
 //         return sendError(res, "Something went wrong", 500, null)
 //     }
 // })
-// const imageUploader = catchAsync(async (req: AuthRequest, res: Response) => {
-//     console.log(req.file?.path)
-//     try {
-//         if (!req.file) {
-//             return sendError(res, "No file uploaded", 400, null)
-//         }
-//         console.log(req.file.buffer);
-//         if (!imagekitClient || imagekitClient === null) {
-//             throw new Error("Imagekitclient not found")
-//         }
-//         // @ts-ignore
-//         const {name , url , fileId , versionInfo ,  filePath , fileType , height , width , thumbnailUrl}   = await imagekitClient.upload({
-//             file: req.file.buffer,
-//             fileName: req.file.originalname
-//         })      
-//         const metadata: imagemetadata = {
-//             name: name,
-//             versionInfo: {
-//                 id: `${versionInfo?.id || ''}`,
-//                 name: `${versionInfo?.name || ''}`
-//             },
-//             filepath: `${filePath}`,
-//             fileType: `${fileType}`,
-//             dimensions: {
-//                 width: width ? width : 0,
-//                 height: height ? height : 0
-//             },
-//             thumbnailUrl: `${thumbnailUrl}`
-//         }
-//         const user = req.user;
-//         if (!user || !user.uid) {
-//             return sendError(res, "User not authenticated", 401, null)
-//         }
-//         await User.findOneAndUpdate(
-//             { uid: user.uid },
-//             {
-//                 $push: {
-//                     image: {
-//                         url: url,
-//                         fieldId: fileId,
-//                         metadata: metadata
-//                     }
-//                 }
-//             },
-//             { new: true }
-//         )
-//         return sendSuccess(res, { url: url, id: fileId }, "Image uploaded successfully", 200)
-//     } catch (error) {
-//         console.log(error);
-//         return sendError(res, "Internal server error", 500, null)
-//     }
-// })
+
 // // get image by id
 // const getImageById = catchAsync(async (req: Request, res: Response) => {
 //     try {
