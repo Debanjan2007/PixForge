@@ -5,10 +5,10 @@ import axios from 'axios'
 const validateUser = async (req: Request, res: Response, next: NextFunction) => {
     // console.log(req);    
     const authHeader = req.headers['authorization'];
-    console.log(req.headers);    
+    console.log(req.headers);
     const tokenFromHeader = Array.isArray(authHeader) ? authHeader[0]?.split(' ')[1] : authHeader?.split(' ')[1];
     const token = req.cookies.accessToken || tokenFromHeader;
-    console.log("token is: ",token);    
+    console.log("token is: ",token);
     if (!token) {
         return sendError(res, "AccessToken not found", 501, null)
     }

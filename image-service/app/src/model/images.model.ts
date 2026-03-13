@@ -1,42 +1,66 @@
 import mongoose from "mongoose";
-import type { imagemetadata } from '../types/image.types.js'
+import type {imagemetadata} from '../types/image.types.js'
 
 interface ImagesDocument extends mongoose.Document {
-    tempUrl: string, // temporary url from minIO 
-    url: string, // unsigned url from imagekit 
+    imageId: string,
+    rawFilepath: string,
+    userId: mongoose.Types.ObjectId,
+    processedUrl: string,
     metadata: imagemetadata
 }
 
 const imagesSchema = new mongoose.Schema(
     {
-        id: {
+        imageId: {
             type: String,
             unique: true,
-        },
-        tempUrl: {
-            type: String,
             required: true
         },
-        url: {
-            type: String
+        // rawFilepath: {
+        //     type: String,
+        //     required: true
+        // },
+        userId: {
+            type: mongoose.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        processedUrl: {
+            type: String,
         },
         metadata: {
-            name: String,
+            name: {
+                type: String,
+            },
             versionInfo: {
-                id: String,
-                name: String
+                id: {
+                    type: String,
+                },
+                name: {
+                    type: String,
+                }
             },
-            filepath: String,
-            fileType: String,
+            filepath: {
+                type: String,
+            },
+            fileType: {
+                type: String,
+            },
             dimensions: {
-                width: Number,
-                height: Number
+                width: {
+                    type: Number,
+                },
+                height: {
+                    type: Number,
+                }
             },
-            thumbnailUrl: String
+            thumbnailUrl: {
+                type: String,
+            }
         }
     }, {
-    timestamps: true
-}
+        timestamps: true
+    }
 )
 
 export const Images = mongoose.model<ImagesDocument>('Images', imagesSchema);
