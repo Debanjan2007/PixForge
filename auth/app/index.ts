@@ -3,7 +3,7 @@ import { connectDB } from 'devdad-express-utils'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { connectToClient } from './src/db/redis.db.connect.js'
+import { connecttoRedis } from './src/db/redis.db.connect.js'
 
 const __filename = fileURLToPath(import.meta.url)
 export const __dirname = path.dirname(__filename)
@@ -15,7 +15,7 @@ const port = 5600;
 console.log(path.join(__dirname, '.env'));
 
 connectDB().then(async () => {
-    await connectToClient()
+    await  connecttoRedis(process.env.REDIS_URL as string)
     app.listen(port, () => {
         console.log(`Server is running at http://localhost:${port}`);
     })

@@ -1,25 +1,29 @@
-import { createClient } from "redis";
+import { createClient  } from "redis";
+import type { RedisClientType  } from "redis";
+import app from "../../app.js";
+let client : RedisClientType
 
-const client = createClient({url: process.env.REDIS_URL as string})
-
-const connectToClient = async () => {
-    console.log(process.env.REDIS_URL);
-    console.log( process.env.REDIS_PASS as string);
+const connecttoRedis = async (redisUrl : string) => {
+    if (!redisUrl) {
+        throw new Error("REDIS_URL not defined");
+    }
+    client  = createClient({
+        url: redisUrl,
+    });
     client.connect().then(() => {
-        console.log("Connection done");
+        console.log("Redis client is connected")
+    }).catch((err) => {
+        console.log("Redis client connection failed", err);
     })
-        .catch((err) => {
-            console.log("Error came while connect", err);
-        })
-    client.on('connect', () => {
-        console.log("client is now connected");
-    })
-    client.on('error', (err) => {
-        throw new Error("Error occured in redis connection", { cause: err })
-    })
-}
+    client.on("connect", () => {
+        console.log("Redis connected");
+    });
 
+    client.on("error", (err) => {
+        console.error("Redis error:", err);
+    });
+}
 export {
-    client,
-    connectToClient
+    client ,
+    connecttoRedis
 }
