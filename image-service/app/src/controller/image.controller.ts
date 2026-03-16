@@ -91,7 +91,7 @@ const imageUploader = catchAsync(async (req: Request , res: Response) => {
 //     }
 // })
 
-// // get image by id
+// get image by id
 // const getImageById = catchAsync(async (req: Request, res: Response) => {
 //     try {
 //         const imageId: string | undefined = req.params.id;
@@ -202,11 +202,11 @@ const imageUploader = catchAsync(async (req: Request , res: Response) => {
 //         return sendError(res, "Internal server error", 500, null)
 //     }
 // })
-// export {
-//     delimage,
-//     removeAllFiles,
-//     imageUploader,
-//     transformImageurl,
-//     getImageList ,
-//     getImageById
-// }
+export {
+    // delimage,
+    // removeAllFiles,
+    imageUploader,
+    // transformImageurl,
+    // getImageList ,
+    // getImageById
+}

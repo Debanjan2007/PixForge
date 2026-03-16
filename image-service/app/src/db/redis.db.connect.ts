@@ -1,12 +1,12 @@
 import { createClient } from "redis";
+import type { RedisClientType } from "redis";
 
-const client = createClient({url: process.env.REDIS_URL as string})
+let client : RedisClientType
 
-const connectToClient = async () => {
-    console.log(process.env.REDIS_URL);
-    console.log( process.env.REDIS_PASS as string);
+const connectToClient = async (redisUrl : string) => {
+    client = createClient({url: redisUrl})
     client.connect().then(() => {
-        console.log("Connection done");
+        console.log("redis Connection done");
     })
         .catch((err) => {
             console.log("Error came while connect", err);
