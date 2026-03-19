@@ -18,6 +18,7 @@ const connectClient = async (redisUrl : string) => {
     })
 }
 
+
 export {
     redisClient ,
     connectClient

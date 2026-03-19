@@ -3,6 +3,8 @@ import { User } from '../model/user.mogoose.model.js'
 import type { Request, Response } from 'express'
 import type { dbuser, user } from '../types/api.types.js'
 import { client } from '../db/redis.db.connect.js'
+import { v4 as uuid } from 'uuid'
+
 
 export type AuthRequest = Request & { user?: dbuser };
 const genaccessToken = async function (uid: string): Promise<string | null | undefined> {
@@ -30,7 +32,11 @@ const reguser = catchAsync(async (req: Request, res: Response) => {
         if (typeof (userDetails.username) !== 'string' || typeof (userDetails.password) !== 'string') {
             return sendError(res, "username or password is not a string", 400, null)
         }
-        const user = await User.create(userDetails)
+        const user = await User.create({
+            uid: uuid(),
+            username: userDetails.username,
+            password: userDetails.password,
+        })
         user.isLogedin = true
         await user.save({ validateBeforeSave: false })
         const accessToken = await genaccessToken(user.uid)

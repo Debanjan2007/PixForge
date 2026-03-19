@@ -17,7 +17,7 @@ const uploadObjectinBucket = async (bucketName : string, fileContent : any , fil
         if(!data){
             return null
         }
-        console.log(`Put object to bucket successfully \n `,data , uniqueKey)
+        // console.log(`Put object to bucket successfully \n `,data , uniqueKey)
         return {data , uniqueKey}
     }catch (err : any) {
         console.log(`Error while uploading object to bucket ${bucketName}`)

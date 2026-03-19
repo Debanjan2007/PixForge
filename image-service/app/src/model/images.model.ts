@@ -3,7 +3,8 @@ import type {imagemetadata} from '../types/image.types.js'
 
 interface ImagesDocument extends mongoose.Document {
     imageId: string,
-    rawFilepath: string,
+    fileId: string,
+    rawFileSignedUrl: string,
     userId: mongoose.Types.ObjectId,
     processedUrl: string,
     metadata: imagemetadata
@@ -13,13 +14,17 @@ const imagesSchema = new mongoose.Schema(
     {
         imageId: {
             type: String,
+            required: true,
             unique: true,
+        },
+        fileId: { // get the fileid from the imagekit response
+            type: String,
+            default: null,
+        },
+        rawFileSignedUrl: {
+            type: String,
             required: true
         },
-        // rawFilepath: {
-        //     type: String,
-        //     required: true
-        // },
         userId: {
             type: mongoose.Types.ObjectId,
             ref: 'User',
@@ -27,35 +32,44 @@ const imagesSchema = new mongoose.Schema(
         },
         processedUrl: {
             type: String,
+            default: null
         },
         metadata: {
             name: {
                 type: String,
+                default: "image"
             },
             versionInfo: {
                 id: {
                     type: String,
+                    default: null
                 },
                 name: {
                     type: String,
+                    default: null
                 }
             },
             filepath: {
                 type: String,
+                default: null
             },
             fileType: {
                 type: String,
+                default: null
             },
             dimensions: {
                 width: {
                     type: Number,
+                    default: 0
                 },
                 height: {
                     type: Number,
+                    default: 0
                 }
             },
             thumbnailUrl: {
                 type: String,
+                default: null
             }
         }
     }, {

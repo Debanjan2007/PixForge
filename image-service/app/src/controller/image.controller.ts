@@ -1,15 +1,19 @@
 import { catchAsync, sendError, sendSuccess } from 'devdad-express-utils'
 import type { Request, Response } from 'express'
+import mongoose from 'mongoose'
 import type { dbuser } from '../types/api.types.js'
 import { uploadObjectinBucket } from '../utils/bucketPutObject.util.js'
 import { addJob } from '../db/queue.connect.js'
 import { fileTypeFromBuffer } from "file-type";
 import { imageExtensions } from '../constants/image.types.constant.js'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import {s3client} from "../../index.js";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { Images } from '../model/images.model.js'
+import type { AuthRequest } from '../middleware/validateUser.middleware.js'
 
 // image uploading
-const imageUploader = catchAsync(async (req: Request , res: Response) => {
-    console.log(`Req coming into this function and req:`)
-    console.log(req.file)
+const imageUploader = catchAsync(async (req: AuthRequest , res: Response) => {
     if(!req.file || !req.file.buffer){
         return sendError(res , "Please upload an image" , 400 , null)
     }
@@ -20,13 +24,28 @@ const imageUploader = catchAsync(async (req: Request , res: Response) => {
     if (!imageExtensions.includes(fileReult.ext)){
         return sendError(res , "Not a image" , 400 , null)
     }
+    // upload object to minio
     const fileUpload = await uploadObjectinBucket(process.env.BUCKET_NAME as string , req.file.buffer , fileReult.ext)
     if(!fileUpload){
         return sendError(res , "Something went wrong while uploading image" , 500 , null)
     }
-    await addJob('uploadImage' , fileUpload.uniqueKey) // adding job to the controller for async task
+    const rawFileSignedUrl = await getSignedUrl(s3client , new GetObjectCommand({
+        Bucket: process.env.BUCKET_NAME as string,
+        Key: fileUpload.uniqueKey
+    }), { expiresIn: 3600 }) // signed url valid for 1 hour
+    const userId = new mongoose.Types.ObjectId(req.user?._id) // reference to user id
+    const image = await Images.create({
+        imageId: fileUpload.uniqueKey.slice(0 , fileUpload.uniqueKey.lastIndexOf('.')),
+        rawFileSignedUrl: rawFileSignedUrl,
+        userId: userId,
+    })
+    const jobContent = { // jobcontent to get the url from imagekit and save it in db
+        fileId: fileUpload.uniqueKey,
+        userId: image._id,
+    }
+    await addJob('uploadImage' , jobContent) // adding job to the controller for async task
     console.log(`Job added to queue successfully`)
-    return sendSuccess(res , fileUpload , "Image uploaded successfully" , 200)
+    return sendSuccess(res , image , "Image uploaded successfully" , 200)
 })
 
 // const delimage = catchAsync(async (req: AuthRequest, res: Response) => {

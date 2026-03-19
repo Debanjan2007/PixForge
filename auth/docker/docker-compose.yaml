@@ -11,7 +11,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
     restart: always
     volumes:
-      - mongo_roadmap_db:/data/db
+      - mongo_db:/data/db
   mongoui:
     image: mongo-express
     container_name: mongoUI
@@ -37,7 +37,7 @@ services:
       - redis_roadmap_db:/data
 
 volumes:
-  mongo_roadmap_db : 
+  mongo_db :
     driver: local
   redis_roadmap_db:
     driver: local

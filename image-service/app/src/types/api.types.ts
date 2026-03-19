@@ -11,4 +11,12 @@ interface dbuser {
     __v: number,
     genToken(): Promise<string>;
 }
-export type { dbuser };
+interface processedImageJob {
+    fileId: string ,
+    userId: string,
+    imagekit: any,
+}
+export type {
+    dbuser ,
+    processedImageJob
+};

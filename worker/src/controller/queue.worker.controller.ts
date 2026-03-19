@@ -2,25 +2,29 @@ import { imagekitClient } from '../index.js'
 import { s3client } from '../index.js'
 import { GetObjectCommand } from '@aws-sdk/client-s3'
 import {  toFile } from "@imagekit/nodejs";
+import { queue } from '../db/queue.connect.js'
 
 // upload an image to imagekit
-const uploadImage = async (fileId : string) => {
+const uploadImage = async (file : any) => {
     const image = await s3client.send(
         new GetObjectCommand({
             Bucket: process.env.BUCKET_NAME as string,
-            Key: fileId
+            Key: file.fileId
         })
     )
     const unit8Array : unknown = await image?.Body?.transformToByteArray()
-    // console.log(unit8Array)
     const buffer = Buffer.from(unit8Array as ArrayBuffer)
-    // console.log(`The image buffer is ${buffer}`)
     const imagekitUrl = await imagekitClient.files.upload({
         file: await toFile(buffer),
-        fileName: fileId.slice(0, fileId.lastIndexOf('.')),
+        fileName: file.fileId.slice(0, file.fileId.lastIndexOf('.')),
         useUniqueFileName: true,
     })
-    console.log(`The imagekit url is`,imagekitUrl)
+    const jobContent = {
+        fileId: file.fileId,
+        userId: file.userId,
+        imagekit: imagekitUrl
+    }
+    await queue.add("processed" , jobContent)
     return imagekitUrl
 }
 

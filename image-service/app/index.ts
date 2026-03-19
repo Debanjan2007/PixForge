@@ -10,6 +10,7 @@ import {
 } from '@aws-sdk/client-s3'
 import { bucketExists } from './src/utils/bucketExist.util.js'
 import { connectToClient } from './src/db/redis.db.connect.js'
+import { workerConnet } from './src/db/worker.connect.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -29,6 +30,7 @@ const s3client = new S3Client({
 connectDB()
 .then(async () => {
     getDBStatus()
+    await workerConnet()
     const bucket : boolean = await bucketExists(process.env.BUCKET_NAME as string)
     if(!bucket){
         await s3client.send(

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { v4 as uuid } from 'uuid'
 import { hash } from 'bcrypt'
 import jwt, { type Secret } from 'jsonwebtoken'
 
@@ -22,17 +21,15 @@ const userSchema = new mongoose.Schema<UserDocument>(
         password: {
             type: String,
             required: true,
-            unique: true,
             match: /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/
         },
         isLogedin : {
-            type: Boolean
+            type: Boolean,
+            default: false
         },
         uid: {
             type: String,
-            unique: true,
-            default: uuid(),
-            immutable: true
+            unique: true
         }
     },
     {
