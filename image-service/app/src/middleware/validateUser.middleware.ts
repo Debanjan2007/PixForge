@@ -5,16 +5,13 @@ import axios from 'axios'
 const validateUser = async (req: Request, res: Response, next: NextFunction) => {
     // console.log(req);    
     const authHeader = req.headers['authorization'];
-    console.log(req.headers);
     const tokenFromHeader = Array.isArray(authHeader) ? authHeader[0]?.split(' ')[1] : authHeader?.split(' ')[1];
     const token = req.cookies.accessToken || tokenFromHeader;
-    console.log("token is: ",token);
     if (!token) {
-        return sendError(res, "AccessToken not found", 501, null)
+        return sendError(res, "AccessToken not found", 404, null)
     }
     console.log(req.hostname, req.httpVersion, req.protocol, req.path);
     const url = `${req.protocol}://${req.hostname}:5600/api/v1/user/validate`
-    console.log(url);
     axios({
         method: 'post',
         url: url,

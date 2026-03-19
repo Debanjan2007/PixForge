@@ -41,7 +41,6 @@
     "imagekit": "^6.0.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.1",
-    "multer": "^2.0.2",
     "redis": "^5.11.0",
     "uuid": "^13.0.0"
   }
