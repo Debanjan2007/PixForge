@@ -7,6 +7,7 @@ const updateImageProcessedUrl = async (job: processedImageJob) => {
         job.userId ,
         {
             processedUrl: job.imagekit.url ,
+            fileId: job.imagekit.fileId ,
             metadata: {
                 name: job.imagekit.name ,
                 versionInfo: {

@@ -1,7 +1,6 @@
 import { catchAsync, sendError, sendSuccess } from 'devdad-express-utils'
 import type { Request, Response } from 'express'
 import mongoose from 'mongoose'
-import type { dbuser } from '../types/api.types.js'
 import { uploadObjectinBucket } from '../utils/bucketPutObject.util.js'
 import { addJob } from '../db/queue.connect.js'
 import { fileTypeFromBuffer } from "file-type";
@@ -11,6 +10,7 @@ import {s3client} from "../../index.js";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { Images } from '../model/images.model.js'
 import type { AuthRequest } from '../middleware/validateUser.middleware.js'
+import { client } from '../db/redis.db.connect.js'
 
 // image uploading
 const imageUploader = catchAsync(async (req: AuthRequest , res: Response) => {
@@ -46,6 +46,52 @@ const imageUploader = catchAsync(async (req: AuthRequest , res: Response) => {
     await addJob('uploadImage' , jobContent) // adding job to the controller for async task
     console.log(`Job added to queue successfully`)
     return sendSuccess(res , image , "Image uploaded successfully" , 200)
+})
+
+// get image by id
+const getImageById = catchAsync(async (req: Request, res: Response) => {
+    try {
+        const imageId: string | undefined = req.params.id as string;
+        const redisImage = await client.get(`image-${imageId}`)
+        if(redisImage){
+            return sendSuccess(res, redisImage ,  "Image fetched successfully from db", 200)
+        }
+        if (!imageId || typeof (imageId) !== 'string') {
+            return sendError(res, "Invalid image id", 400, null)
+        }
+        // getting image from mongoDB by its fieldID
+        const imageData = await Images.aggregate([
+            {
+                $match: {
+                    "imageId": imageId
+                }
+            }
+        ]);
+        if (!imageData) {
+            return sendError(res, "Image not found", 404, null)
+        }
+        let image: {} | null = null
+        if(!imageData[0].processedUrl || typeof (imageData[0].processedUrl) === null){
+            image = {
+                imageId: imageData[0].imageId,
+                fileId: imageData[0].fileId,
+                url:imageData[0].rawFileSignedUrl,
+                metadata: imageData[0].metadata
+            }
+        }else {
+            image = {
+                imageId: imageData[0].imageId,
+                fileId: imageData[0].fileId,
+                url:imageData[0].processedUrl,
+                metadata: imageData[0].metadata
+            }
+        }
+        await client.set(`image-${imageId}` , JSON.stringify(image))
+        return sendSuccess(res, image ,  "Image fetched successfully from db", 200)
+    } catch (error) {
+        console.log(error);
+        return sendError(res, "Internal server error", 500, null)
+    }
 })
 
 // const delimage = catchAsync(async (req: AuthRequest, res: Response) => {
@@ -116,7 +162,7 @@ const imageUploader = catchAsync(async (req: AuthRequest , res: Response) => {
 //                 }
 //             }
 //         ])
-//         console.log(images[0].image);        
+//         console.log(images[0].image);
 //         await User.updateOne(
 //             { uid: user.uid },
 //                 {
@@ -128,44 +174,11 @@ const imageUploader = catchAsync(async (req: AuthRequest , res: Response) => {
 //         publisher?.add('delAllimage' , { imagesArray : images[0].image})
 //         return sendSuccess(res , null , "All images have been delted" , 200 )
 //     } catch (error) {
-//         console.log(error);        
+//         console.log(error);
 //         return sendError(res, "Something went wrong", 500, null)
 //     }
 // })
 
-// get image by id
-// const getImageById = catchAsync(async (req: Request, res: Response) => {
-//     try {
-//         const imageId: string | undefined = req.params.id;
-//         if (!imageId || typeof (imageId) !== 'string') {
-//             return sendError(res, "Invalid image id", 400, null)
-//         }
-//         // getting image from mongoDB by its fieldID 
-//         const image = await User.aggregate([
-//             {
-//                 $unwind: {
-//                     path: "$image",
-//                     includeArrayIndex: "imageIndex",
-//                 }
-//             }, {
-//                 $match: {
-//                     "image.fieldId": imageId
-//                 }
-//             }, {
-//                 $project: {
-//                     image: 1,
-//                 }
-//             }
-//         ]);
-//         if (!image) {
-//             return sendError(res, "Image not found", 404, null)
-//         }
-//         return sendSuccess(res, image[0].image, "Image fetched successfully from db", 200)
-//     } catch (error) {
-//         console.log(error);
-//         return sendError(res, "Internal server error", 500, null)
-//     }
-// })
 // // get images in list with pagination
 // const getImageList = catchAsync(async (req: AuthRequest, res: Response) => {
 //     try {
@@ -245,10 +258,10 @@ const imageUploader = catchAsync(async (req: AuthRequest , res: Response) => {
 //     }
 // })
 export {
+    imageUploader,
+    getImageById
     // delimage,
     // removeAllFiles,
-    imageUploader,
     // transformImageurl,
     // getImageList ,
-    // getImageById
 }

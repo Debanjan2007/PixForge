@@ -9,8 +9,9 @@ router.post('/register' , registerUser)
 router.post('/login' , loginUser)
 
 // safe routes
-router.post('/logout', verifyJwt , logout)
-router.delete('/delete-account', verifyJwt , delacc)
+router.use(verifyJwt)
+router.post('/logout' , logout)
+router.delete('/delete-account' , delacc)
 
 // http communication with the image-service
-router.post('/validate', verifyJwt , validateUser)
+router.post('/validate' , validateUser)
