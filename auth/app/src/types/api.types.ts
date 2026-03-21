@@ -6,6 +6,7 @@ export interface user {
 export interface dbuser {
     save(arg0: { validateBeforeSave: boolean; }): unknown;
     uid: string,
+    id: string,
     username: string,
     password: string,
     isLogedin : boolean,

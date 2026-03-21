@@ -11,6 +11,7 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { Images } from '../model/images.model.js'
 import type { AuthRequest } from '../middleware/validateUser.middleware.js'
 import { client } from '../db/redis.db.connect.js'
+import type { dbuser } from "../types/api.types.js";
 
 // image uploading
 const imageUploader = catchAsync(async (req: AuthRequest , res: Response) => {
@@ -35,9 +36,10 @@ const imageUploader = catchAsync(async (req: AuthRequest , res: Response) => {
     }), { expiresIn: 3600 }) // signed url valid for 1 hour
     const userId = new mongoose.Types.ObjectId(req.user?._id) // reference to user id
     const image = await Images.create({
-        imageId: fileUpload.uniqueKey.slice(0 , fileUpload.uniqueKey.lastIndexOf('.')),
+        imageId: fileUpload.uniqueKey,
         rawFileSignedUrl: rawFileSignedUrl,
         userId: userId,
+        contentType: fileUpload.contentType
     })
     const jobContent = { // jobcontent to get the url from imagekit and save it in db
         fileId: fileUpload.uniqueKey,
@@ -93,59 +95,58 @@ const getImageById = catchAsync(async (req: Request, res: Response) => {
         return sendError(res, "Internal server error", 500, null)
     }
 })
-
-// const delimage = catchAsync(async (req: AuthRequest, res: Response) => {
-//     try {
-//         const user = req.user as dbuser;
-//         const imageId: string | undefined = req.params.id
-//         if (typeof imageId === undefined) {
-//             return sendError(res, "Please paste the imageid", 400, null)
-//         }
-//         const ImagenotExist = await User.aggregate([
-//             {
-//                 $match: {
-//                     "uid": user.uid
-//                 }
-//             },
-//             {
-//                 $unwind: {
-//                     path: "$image",
-//                     includeArrayIndex: "imageindex"
-//                 }
-//             }, {
-//                 $match: {
-//                     "image.fieldId": imageId
-//                 },
-//             }, {
-//                 $project: {
-//                     image: 1
-//                 }
-//             }
-//         ]);
-//         if (!ImagenotExist || typeof ImagenotExist === null || ImagenotExist.length <= 0) {
-//             return sendError(res, "Image doesnot exist please verify the image id", 400, null);
-//         }
-//         await User.updateOne( // updating image array by deleting the required image from db
-//             { uid: user.uid },
-//             {
-//                 $pull: {
-//                     image: { fieldId: imageId }
-//                 }
-//             }
-//         )
-//         await publisher?.add('delimage', { fieldId: imageId }, {
-//             attempts: 5,
-//             backoff: {
-//                 type: 'exponential',
-//                 delay: 2000
-//             }
-//         })
-//         return sendSuccess(res, null, "Image deleted successfully", 200)
-//     } catch (error) {
-//         console.log(error);
-//         sendError(res, "internal server error", 500, null)
-//     }
-// })
+// get images in a list with pagination
+const getImageList = catchAsync(async (req: AuthRequest, res: Response) => {
+    try {
+        const page: number = req.query.page ? parseInt(req.query.page as string) : 1;
+        const limit: number = req.query.limit ? parseInt(req.query.limit as string) : 10;
+        const user = req.user as dbuser;
+        const userId = new mongoose.Types.ObjectId(user._id)
+        const images : any[] = await Images.aggregate([
+            {
+                $match: {
+                    "userId": userId,
+                },
+            }
+            , {
+                $skip: (page - 1) * limit
+            }
+            , {
+                $limit: limit
+            }
+        ])
+        console.log(images);
+        if (!images) {
+            return sendError(res, "No images found", 404, null);
+        }
+        return sendSuccess(res, images, "Images fetched successfully", 200)
+    } catch (error) {
+        console.log(error);
+        sendError(res, "Internal server error", 500, null);
+    }
+})
+// delete image by id
+const delimage = catchAsync(async (req: Request, res: Response) => {
+    try {
+        const imageId: string | undefined = req.params.id as string
+        if (typeof imageId === undefined) {
+            return sendError(res, "Please paste the imageid", 400, null)
+        }
+        const imageData = await Images.aggregate([
+            {
+                $match: {
+                    "imageId": imageId
+                }
+            }
+        ]);
+        await Images.deleteOne({ imageId: imageId })
+        await addJob("deleteImage",  imageData )
+        return sendSuccess(res, null, "Image deleted successfully", 200)
+    } catch (error) {
+        console.log(error);
+        sendError(res, "internal server error", 500, null)
+    }
+})
 
 // const removeAllFiles = catchAsync(async (req: AuthRequest, res: Response) => {
 //     try {
@@ -179,43 +180,6 @@ const getImageById = catchAsync(async (req: Request, res: Response) => {
 //     }
 // })
 
-// // get images in list with pagination
-// const getImageList = catchAsync(async (req: AuthRequest, res: Response) => {
-//     try {
-//         const page: number = req.query.page ? parseInt(req.query.page as string) : 1;
-//         const limit: number = req.query.limit ? parseInt(req.query.limit as string) : 10;
-//         const user = req.user as dbuser;
-//         const images = await User.aggregate([
-//             {
-//                 $match: {
-//                     "uid": user.uid,
-//                 },
-//             }
-//             , {
-//                 $unwind: {
-//                     path: "$image",
-//                     includeArrayIndex: "imageIndex",
-//                 }
-//             }, {
-//                 $skip: (page - 1) * limit
-//             }
-//             , {
-//                 $project: {
-//                     image: 1
-//                 }
-//             }, {
-//                 $limit: limit
-//             }
-//         ])
-//         if (!images) {
-//             return sendError(res, "No images found", 404, null);
-//         }
-//         return sendSuccess(res, images, "Images fetched successfully", 200)
-//     } catch (error) {
-//         console.log(error);
-//         sendError(res, "Internal server error", 500, null);
-//     }
-// })
 // // transform image
 // const transformImageurl = catchAsync(async (req: AuthRequest, res: Response) => {
 //     if (req.body === undefined || req.body === null) {
@@ -259,9 +223,9 @@ const getImageById = catchAsync(async (req: Request, res: Response) => {
 // })
 export {
     imageUploader,
-    getImageById
-    // delimage,
+    getImageById ,
+    getImageList ,
+    delimage,
     // removeAllFiles,
     // transformImageurl,
-    // getImageList ,
 }

@@ -1,6 +1,6 @@
 import { imagekitClient } from '../index.js'
 import { s3client } from '../index.js'
-import { GetObjectCommand } from '@aws-sdk/client-s3'
+import { GetObjectCommand , DeleteObjectCommand  } from '@aws-sdk/client-s3'
 import {  toFile } from "@imagekit/nodejs";
 import { queue } from '../db/queue.connect.js'
 
@@ -28,19 +28,29 @@ const uploadImage = async (file : any) => {
     return imagekitUrl
 }
 
-// const delimageHandle = async (filedId: string) => {
-//     if (!imagekitClient || imagekitClient === null) {
-//         console.log("Imagekit client not found")
-//         throw new Error("Imagekitclient not found")
-//     }
-//     try {
-//         await imagekitClient.deleteFile(filedId as string)
-//         return true
-//     } catch (error) {
-//         console.log(error);
-//         throw new Error("Something went wrong", { cause: error })
-//     }
-// }
+const delimageHandle = async (filedId: string , imageId: string) => {
+    try {
+        console.log("deleting image from imagekit" , filedId , imageId)
+        //  @ts-expect-error
+        await imagekitClient.files.delete(filedId as string , (err : any , res : any) => {
+            if(err){
+                console.log(err);
+                return false
+            }
+            console.log(res)
+        })
+        await s3client.send(
+            new DeleteObjectCommand({
+                Bucket: process.env.BUCKET_NAME as string,
+                Key: imageId
+            })
+        )
+        return true
+    } catch (error) {
+        console.log(error);
+        throw new Error("Something went wrong", { cause: error })
+    }
+}
 //
 // const deleAllFiles = async (images: Array<any>) => {
 //     const imageIds : Array<string | null> = [];
@@ -62,7 +72,7 @@ const uploadImage = async (file : any) => {
 // }
 //
 export {
-    // delimageHandle ,
+    delimageHandle ,
     // deleAllFiles ,
     uploadImage
 }

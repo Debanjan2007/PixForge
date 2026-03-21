@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 interface dbuser {
     save(arg0: { validateBeforeSave: boolean; }): unknown;
     uid: string,
+    id: string,
     username: string,
     password: string,
     isLogedin : boolean,
@@ -20,3 +21,6 @@ export type {
     dbuser ,
     processedImageJob
 };
+export interface fileTypeResult {
+
+}

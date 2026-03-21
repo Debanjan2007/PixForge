@@ -46,6 +46,7 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.genToken = async function () {
     const payload = {
         uid: this.uid,
+        id: this._id,
         username: this.username,
         logedIn: this.isLogedin
     }

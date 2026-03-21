@@ -4,6 +4,7 @@ import type {imagemetadata} from '../types/image.types.js'
 interface ImagesDocument extends mongoose.Document {
     imageId: string,
     fileId: string,
+    contentType: string
     rawFileSignedUrl: string,
     userId: mongoose.Types.ObjectId,
     processedUrl: string,
@@ -12,7 +13,7 @@ interface ImagesDocument extends mongoose.Document {
 
 const imagesSchema = new mongoose.Schema(
     {
-        imageId: {
+        imageId: { // unique id of the image same in s3 bucket
             type: String,
             required: true,
             unique: true,
@@ -28,6 +29,10 @@ const imagesSchema = new mongoose.Schema(
         userId: {
             type: mongoose.Types.ObjectId,
             ref: 'User',
+            required: true
+        },
+        contentType: {
+            type: String,
             required: true
         },
         processedUrl: {

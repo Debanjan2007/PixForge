@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq'
 import { imagekitClient } from '../index.js'
-import { uploadImage } from '../controller/queue.worker.controller.js'
+import { uploadImage , delimageHandle } from '../controller/queue.worker.controller.js'
 let worker : Worker
 const workerConnet = async () => {
     worker = new Worker('image-upload', async (job) => {
@@ -8,6 +8,9 @@ const workerConnet = async () => {
             case 'uploadImage' :
                 console.log("Uploading image")
                 await uploadImage(job.data as string)
+                break
+            case 'deleteImage' :
+                await delimageHandle(job.data[0].fileId as string , job.data[0].imageId as string)
                 break
             default :
                 console.log("Job not found")

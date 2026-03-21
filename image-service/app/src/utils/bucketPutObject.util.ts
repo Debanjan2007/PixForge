@@ -4,7 +4,7 @@ import { v4 as uuidV4 } from 'uuid'
 // Put or upload an object to a bucket.
 const uploadObjectinBucket = async (bucketName : string, fileContent : any , fileExtension : string) => {
     try{
-        const uniqueKey : string = `${uuidV4()}.${fileExtension}`
+        const uniqueKey : string = `${uuidV4()}`
         const data = await s3client.send(
             new PutObjectCommand({
                 Bucket: bucketName,
@@ -18,7 +18,7 @@ const uploadObjectinBucket = async (bucketName : string, fileContent : any , fil
             return null
         }
         // console.log(`Put object to bucket successfully \n `,data , uniqueKey)
-        return {data , uniqueKey}
+        return {data , uniqueKey , contentType: `image/${fileExtension}`}
     }catch (err : any) {
         console.log(`Error while uploading object to bucket ${bucketName}`)
         throw new Error("Error while uploading object to bucket", err)

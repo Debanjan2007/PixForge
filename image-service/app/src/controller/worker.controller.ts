@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import {Images} from "../model/images.model.js";
 
 const updateImageProcessedUrl = async (job: processedImageJob) => {
-    const imageData = await Images.findByIdAndUpdate(
+    await Images.findByIdAndUpdate(
         job.userId ,
         {
             processedUrl: job.imagekit.url ,
