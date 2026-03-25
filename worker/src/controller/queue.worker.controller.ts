@@ -36,6 +36,7 @@ const delimageHandle = async (filedId: string , imageId: string) => {
             if(err){
                 console.log(err);
                 return false
+
             }
             console.log(res)
         })

@@ -148,37 +148,23 @@ const delimage = catchAsync(async (req: Request, res: Response) => {
     }
 })
 
-// const removeAllFiles = catchAsync(async (req: AuthRequest, res: Response) => {
-//     try {
-//         const user = req.user as dbuser
-//         const images = await User.aggregate([
-//             {
-//                 $match: {
-//                     "uid" : user.uid
-//                 }
-//             },
-//             {
-//                 $project : {
-//                     image: 1
-//                 }
-//             }
-//         ])
-//         console.log(images[0].image);
-//         await User.updateOne(
-//             { uid: user.uid },
-//                 {
-//                     $set : {
-//                         image: []
-//                     }
-//                 }
-//         )
-//         publisher?.add('delAllimage' , { imagesArray : images[0].image})
-//         return sendSuccess(res , null , "All images have been delted" , 200 )
-//     } catch (error) {
-//         console.log(error);
-//         return sendError(res, "Something went wrong", 500, null)
-//     }
-// })
+// delete all images of a user
+const removeAllFiles = catchAsync(async (req: AuthRequest, res: Response) => {
+    try {
+        const user = req.user as dbuser
+        console.log("User is :",user)
+        const images = await Images.deleteMany({ userId: user._id })
+        console.log(images)
+        if(!images.acknowledged){
+            return sendError(res , "Something went wrong" , 500 , null)
+        }
+        await addJob("deleteAllImages" , images)
+        return sendSuccess(res , null , "All images have been delted" , 200 )
+    } catch (error) {
+        console.log(error);
+        return sendError(res, "Something went wrong", 500, null)
+    }
+})
 
 // // transform image
 // const transformImageurl = catchAsync(async (req: AuthRequest, res: Response) => {
@@ -226,6 +212,6 @@ export {
     getImageById ,
     getImageList ,
     delimage,
-    // removeAllFiles,
+    removeAllFiles,
     // transformImageurl,
 }

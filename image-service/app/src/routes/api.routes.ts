@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { imageUploader , getImageById , getImageList , delimage} from '../controller/image.controller.js'
+import { imageUploader , getImageById , getImageList , delimage , removeAllFiles} from '../controller/image.controller.js'
 import multer from 'multer'
 
 const storage = multer.memoryStorage()
@@ -10,5 +10,6 @@ router.post('/upload', uploader.single("pix") , imageUploader)
 router.get('/:id', getImageById)
 router.get('/', getImageList)
 router.delete('/:id' , delimage)
+router.delete('/', removeAllFiles) // delete all images
 
 export default router;
