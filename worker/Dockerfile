@@ -1,11 +1,18 @@
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /worker
-COPY package.*json ./
-RUN npm install --omit=dev
+
+COPY package.json package-lock.json ./
+RUN npm install
+
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine AS production
+FROM node:22-alpine AS production
 WORKDIR /worker
-COPY --from=builder /worker/* ./
-CMD ["npm" , "start"]
+
+COPY package.json package-lock.json ./
+RUN npm install --omit=dev
+
+COPY --from=builder /worker/dist ./dist
+
+CMD ["node", "dist/index.js"]

@@ -15,7 +15,7 @@ import { workerConnet } from './src/db/worker.connect.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 dotenv.config({ path: path.join(__dirname, '.env') }) 
-const port = process.env.PORT
+const port = 4500
 const s3client = new S3Client({
     endpoint: process.env.MINIO_ENDPOINT as string,
     region: process.env.MINIO_REGION as string,

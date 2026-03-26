@@ -6,8 +6,7 @@ import { workerConnet } from './db/wroker.connect.js'
 import { ImageKit } from "@imagekit/nodejs";
 import {
     S3Client,
-    ListBucketsCommand,
-    CreateBucketCommand
+    ListBucketsCommand
 } from '@aws-sdk/client-s3'
 
 
