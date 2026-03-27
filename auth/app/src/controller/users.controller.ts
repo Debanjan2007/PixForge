@@ -142,6 +142,10 @@ const validateUser = catchAsync(async (req: AuthRequest , res) => {
     if(!(req.user as dbuser)){
         return sendError(res , "User not found or user must be logedout" , 404 , null)
     }
+    const user = await User.findById(req.user?._id)
+    if(!user){
+        return sendError(res , "User not found or user must be logedout" , 404 , null)
+    }
     return sendSuccess(res , {user: req.user} , "User validation successfull" , 200)
 })
 export {

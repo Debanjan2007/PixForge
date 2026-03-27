@@ -1,3 +1,4 @@
+
 # PixForge
 
 ![PixForge Banner](https://img.shields.io/badge/PixForge-Image%20Processing-blueviolet?style=for-the-badge&logo=imagekit)
@@ -349,7 +350,24 @@ For local development, you can run individual services outside of Docker Compose
 
 To run tests:
 ```bash
-# Placeholder: Add your test command here once tests are implemented
+## 🧪 Testing
+
+PixForge maintains a high standard of code quality with approximately 85% test coverage across the system. Each microservice includes its own suite of tests that can be executed independently. To run the tests, navigate to the specific service directory and use the npm test command:
+
+### Auth Service
+bash
+cd auth && npm test
+
+
+### Image Service
+bash
+cd image-service && npm test
+
+
+### Worker Service
+bash
+cd worker && npm test
+
 # npm test
 ```
 

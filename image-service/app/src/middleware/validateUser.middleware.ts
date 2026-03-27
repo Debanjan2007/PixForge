@@ -6,15 +6,21 @@ export type AuthRequest = Request & { user?: dbuser };
 
 const validateUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
     // console.log(req);    
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers['authorization']
     const tokenFromHeader = Array.isArray(authHeader) ? authHeader[0]?.split(' ')[1] : authHeader?.split(' ')[1];
     const token = req.cookies.accessToken || tokenFromHeader;
     if (!token) {
         return sendError(res, "AccessToken not found", 404, null)
     }
-    const url = `${req.protocol}://${req.hostname}:5600/api/v1/user/validate`
+    const servicetype : string = process.env.SERVICE_TYPE as string
+    let url : string = ""
+    if(servicetype === "local") {
+        url =`${req.protocol}://${req.hostname}:5600/api/v1/user/validate`
+    }else{
+        url =`${req.protocol}://auth:5600/api/auth/validate`
+    }
     axios({
-        method: 'post',
+        method: 'get',
         url: url,
         headers: {
             Cookie: `accessToken=${token}`
@@ -22,17 +28,18 @@ const validateUser = async (req: AuthRequest, res: Response, next: NextFunction)
         withCredentials: true
     }).then((data) => {
         if(data.data.success === true){
+            console.log("User validation successfull")
             req.user = data.data.data.user
             next()
         }else{
-            return sendError(res, "User has loged out already", 401, null)
+            return sendError(res, "User has loged out already", 401, {err : data.data.message})
         }
     })
         .catch((err) => {
             if (err.status === 404) {
-                return sendError(res, "User has loged out already or account deleted", 404, null)
+                return sendError(res, "User has loged out already or account deleted", 404, {cause : err})
             } else {
-                return sendError(res, "User validation failed", 500, null)
+                return sendError(res, "User validation failed", 500, {cause : err})
             }
         })
 }

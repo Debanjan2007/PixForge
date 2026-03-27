@@ -14,4 +14,4 @@ router.post('/logout' , logout)
 router.delete('/delete-account' , delacc)
 
 // http communication with the image-service
-router.post('/validate' , validateUser)
+router.get('/validate' , validateUser)

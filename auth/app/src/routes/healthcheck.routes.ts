@@ -4,6 +4,6 @@ import { sendSuccess } from 'devdad-express-utils'
 
 export const router = Router() 
 
-router.get('/heathcheck' , (req , res) => {
+router.get('/healthcheck' , (req , res) => {
     sendSuccess(res , null , "Healthcheck OK" , 200)
 })

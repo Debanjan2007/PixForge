@@ -13,6 +13,8 @@ services:
       db:
         condition: service_healthy
     restart: always
+    expose:
+      - "5600"
     networks: 
       - image-processor-network
 
@@ -34,9 +36,12 @@ services:
       - IMAGEKIT_PRIVATE_KEY=${IMAGEKIT_PRIVATE_KEY}
       - IMAGEKIT_URL_ENDPOINT=${IMAGEKIT_URL_ENDPOINT}
       - REDIS_URL=${REDIS_URL}
+      - SERVICE_TYPE=${SERVICE_TYPE}
     depends_on:
       db:
           condition: service_healthy
+    expose:
+      - "4500"
     restart: always
     networks:
       - image-processor-network
