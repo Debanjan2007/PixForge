@@ -177,94 +177,59 @@ Before you begin, ensure you have the following installed:
 
 2.  **Configure Environment Variables:**
 
-    Each service and the main `compose` directory have `.env.example` files. You need to create `.env` files based on these examples in the respective directories.
-
-    *   `compose/.env`:
-        ```env
-        IMAGEKIT_PUBLIC_KEY=<your-imagekit-public-key>
-        IMAGEKIT_PRIVATE_KEY=<your-imagekit-private-key>
-        IMAGEKIT_END_POINT=<your-imagekit-endpoint>
-        MONGO_URI=mongodb://<your-mongoBD-username>:<your-db-password>@mongodb:27017/imageprocessor?authSource=admin
-        JWT_AUTH=<a-strong-secret-for-jwt>
-        ```
-        *   **Note**: For `MONGO_URI`, ensure `mongodb` is used as the hostname if running via Docker Compose, as it's the service name.
-        *   **ImageKit**: Sign up at [ImageKit.io](https://imagekit.io/) to get your public key, private key, and URL endpoint.
-
-    *   `auth/docker/.env`:
-        ```env
-        MONGODB_USERNAME=<auth-db-username>
-        MONGODB_PASSWORD=<auth-db-password>
-        MONGOUI_UI_USERNAME=<mongo-express-username>
-        MONGO_UI_PASSWORD=<mongo-express-password>
-        REDIS_PASS=<redis-password>
-        ```
-
-    *   `image-service/app/.env`:
-        ```env
-        PORT=4500
-        MONGO_URI=mongodb://<your-mongoBD-username>:<your-db-password>@mongodb:27017/imageprocessor?authSource=admin
-        REDIS_PASSWORD=<redis-password>
-        MINIO_ROOT_USERNAME=<minio-username>
-        MINIO_ROOT_PASSWORD=<minio-password>
-        MINIO_ENDPOINT=http://minio:9000 # Use service name 'minio' for Docker Compose
-        MINIO_REGION=us-east-1 # Or your preferred region
-        BUCKET_NAME=pixforge-images
-        REDIS_URL=redis://redis:6379 # Use service name 'redis' for Docker Compose
-        IMAGEKIT_PUB_KEY=<your-imagekit-public-key>
-        IMAGEKIT_PRIVATE_KEY=<your-imagekit-private-key>
-        IMAGEKIT_URL_ENDPOINT=<your-imagekit-endpoint>
-        ```
-
-    *   `image-service/docker/.env`:
-        ```env
-        REDIS_PASSWORD=<redis-password>
-        MINIO_ROOT_USERNAME=<minio-username>
-        MINIO_ROOT_PASSWORD=<minio-password>
-        ```
-
-    *   `worker/src/.env`:
-        ```env
-        IMAGEKIT_PRIVATE_KEY=<your-imagekit-private-key>
-        MINIO_ROOT_USERNAME=<minio-username>
-        MINIO_ROOT_PASSWORD=<minio-password>
-        MINIO_ENDPOINT=http://minio:9000 # Use service name 'minio' for Docker Compose
-        MINIO_REGION=us-east-1
-        REDIS_URL=redis://redis:6379 # Use service name 'redis' for Docker Compose
-        ```
-
-    **Important**: Replace all placeholder values (`<...>` ) with your actual secrets and desired configurations. Ensure `REDIS_PASSWORD`, `MINIO_ROOT_USERNAME`, `MINIO_ROOT_PASSWORD`, and `MONGO_URI` credentials match across relevant `.env` files.
-
-3.  **Start the services using Docker Compose:**
-
-    Navigate to the root of the cloned repository and run:
+    Just one `.env` file is required for all services. 
 
     ```bash
-    docker-compose -f compose/docker-compose.yml up --build -d
+    cd compose
+    ```
+    *   `docker-compose.yml`: Contains environment variables for all services.
+    *   `compose/.env`: MONGO_ROOT_USERNAME=
+    ```bash
+        MONGO_ROOT_USERNAME=
+        MONGO_ROOT_PASSWORD=
+        JWT_AUTH=
+        MONGO_URI=
+        PORT=
+        REDIS_PASSWORD=
+        MINIO_ROOT_USERNAME=
+        MINIO_ROOT_PASSWORD=
+        MINIO_ENDPOINT=
+        MINIO_REGION=
+        BUCKET_NAME=
+        IMAGEKIT_PUB_KEY=
+        IMAGEKIT_PRIVATE_KEY=
+        IMAGEKIT_URL_ENDPOINT=
+        REDIS_URL=
+        SERVICE_TYPE=
+    ```
+3.  **Start the services using Docker Compose:**
+
+    ```bash
+    docker compose up --build -d
     ```
     *   `--build`: Rebuilds images if there are changes.
     *   `-d`: Runs services in detached mode (in the background).
 
 4.  **Verify Installation:**
 
-    *   Open your browser and navigate to `http://localhost:80`. You should see the Nginx welcome page or a 404 if no default route is configured.
-    *   Check Docker container status: `docker-compose -f compose/docker-compose.yml ps`
-    *   Access Mongo Express (if configured): `http://localhost:8081` (using `MONGOUI_UI_USERNAME` and `MONGO_UI_PASSWORD` from `auth/docker/.env`).
+    *   Open your browser and navigate to `http://localhost:80`. You should see the 404 as no default route is configured.
+    *   Check Docker container status: `docker compose -f compose/docker-compose.yml ps`
     *   Access MinIO Console: `http://localhost:9001` (using `MINIO_ROOT_USERNAME` and `MINIO_ROOT_PASSWORD` from `image-service/docker/.env`).
 
 ## 💡 Usage
 
-The API is exposed via Nginx on `http://localhost:80`. All API routes are prefixed with `/api/v1`.
+The API is exposed via Nginx on `http://localhost:8080`. All API routes are prefixed with `/api/auth` and `/api/images`.
 
 ### Authentication
 
 First, you need to register and log in to obtain a JWT token, which will be stored in your browser's cookies.
 
 *   **Register User**
-    *   `POST /api/v1/user/register`
-    *   **Body**: `{"username": "testuser", "email": "test@example.com", "password": "password123"}`
+    *   `POST /api/user/register`
+    *   **Body**: `{"username": "testuser", "password": "password123"}`
 *   **Login User**
-    *   `POST /api/v1/user/login`
-    *   **Body**: `{"email": "test@example.com", "password": "password123"}`
+    *   `POST /api/user/login`
+    *   **Body**: `{"password": "password123"}`
 
 After successful login, subsequent requests will automatically use the JWT token stored in cookies.
 
@@ -273,13 +238,13 @@ After successful login, subsequent requests will automatically use the JWT token
 All image operations require authentication.
 
 1.  **Upload an Image**
-    *   `POST /api/v1/images/upload`
+    *   `POST /apiimages/upload`
     *   **Headers**: `Content-Type: multipart/form-data`
     *   **Body**: Form data with a field named `pix` containing the image file.
     *   **Example (using `curl`)**:
         ```bash
         curl -X POST \
-          http://localhost/api/v1/images/upload \
+          http://localhost/api/images/upload \
           -H 'Content-Type: multipart/form-data' \
           -b "connect.sid=YOUR_SESSION_COOKIE" \
           -F 'pix=@/path/to/your/image.jpg'
@@ -287,21 +252,21 @@ All image operations require authentication.
         *(Note: Replace `YOUR_SESSION_COOKIE` with the actual `connect.sid` cookie value you get after logging in, or use a tool like Postman/Insomnia that handles cookies automatically.)*
 
 2.  **Get Image by ID**
-    *   `GET /api/v1/images/:id`
+    *   `GET /api/images/:id`
     *   `id` refers to the `imageId` returned after upload.
-    *   **Example**: `GET http://localhost/api/v1/images/unique-image-id-123`
+    *   **Example**: `GET http://localhost/api/images/unique-image-id-123`
 
 3.  **List User Images**
-    *   `GET /api/v1/images`
+    *   `GET /api/images`
     *   **Query Parameters**:
         *   `page` (optional): Page number (default: 1)
         *   `limit` (optional): Number of images per page (default: 10)
-    *   **Example**: `GET http://localhost/api/v1/images?page=1&limit=5`
+    *   **Example**: `GET http://localhost/api/images?page=1&limit=5`
 
 4.  **Delete Image by ID**
-    *   `DELETE /api/v1/images/:id`
+    *   `DELETE /api/images/:id`
     *   `id` refers to the `imageId` returned after upload.
-    *   **Example**: `DELETE http://localhost/api/v1/images/unique-image-id-123`
+    *   **Example**: `DELETE http://localhost/api/images/unique-image-id-123`
 
 ## ⚙️ Development
 
@@ -393,7 +358,7 @@ For production deployments, consider:
 
 ### Auth Service
 
-**Base URL**: `http://localhost/api/v1/user`
+**Base URL**: `http://localhost/api/user`
 
 *   **`POST /register`**
     *   **Description**: Registers a new user.
@@ -401,7 +366,6 @@ For production deployments, consider:
         ```json
         {
             "username": "john_doe",
-            "email": "john.doe@example.com",
             "password": "securepassword123"
         }
         ```
@@ -413,7 +377,6 @@ For production deployments, consider:
             "data": {
                 "_id": "65f...123",
                 "username": "john_doe",
-                "email": "john.doe@example.com",
                 "createdAt": "2024-03-20T10:00:00.000Z",
                 "updatedAt": "2024-03-20T10:00:00.000Z"
             }
@@ -425,7 +388,7 @@ For production deployments, consider:
     *   **Request Body**:
         ```json
         {
-            "email": "john.doe@example.com",
+            "username": "john_doe",
             "password": "securepassword123"
         }
         ```
@@ -437,7 +400,6 @@ For production deployments, consider:
             "data": {
                 "_id": "65f...123",
                 "username": "john_doe",
-                "email": "john.doe@example.com"
             }
         }
         ```
@@ -445,7 +407,7 @@ For production deployments, consider:
 
 ### Image Service
 
-**Base URL**: `http://localhost/api/v1/images`
+**Base URL**: `http://localhost/api/images`
 
 *   **`POST /upload`**
     *   **Description**: Uploads an image file. Requires authentication.
@@ -554,7 +516,7 @@ We welcome contributions to PixForge! If you'd like to contribute, please follow
     *   Ensure Docker and Docker Compose are running.
     *   Check for port conflicts (e.g., if another service is using port 80, 5600, 4500, 27017, 6379, 9000, 9001, 8081).
     *   Verify your `.env` files are correctly configured and present in all required directories.
-    *   Try `docker-compose -f compose/docker-compose.yml down --volumes` to clean up previous containers/volumes, then `docker-compose -f compose/docker-compose.yml up --build -d` again.
+    *   Try `docker compose -f compose/docker-compose.yml down --volumes` to clean up previous containers/volumes, then `docker-compose -f compose/docker-compose.yml up --build -d` again.
 *   **Service not starting / "connection refused"**:
     *   Check the logs of the failing service: `docker-compose -f compose/docker-compose.yml logs <service-name>`.
     *   Ensure database credentials (MongoDB, Redis, MinIO) in `.env` files are correct and match across services.
