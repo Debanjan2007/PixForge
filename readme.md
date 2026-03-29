@@ -170,7 +170,7 @@ Before you begin, ensure you have the following installed:
 
 1.  **Clone the repository:**
 
-    ```bash
+    ``` bash
     git clone https://github.com/Debanjan2007/PixForge.git
     cd PixForge
     ```
@@ -179,12 +179,12 @@ Before you begin, ensure you have the following installed:
 
     Just one `.env` file is required for all services. 
 
-    ```bash
+    ``` bash
     cd compose
     ```
     *   `docker-compose.yml`: Contains environment variables for all services.
     *   `compose/.env`: MONGO_ROOT_USERNAME=
-    ```bash
+    ``` bash
         MONGO_ROOT_USERNAME=
         MONGO_ROOT_PASSWORD=
         JWT_AUTH=
@@ -242,7 +242,7 @@ All image operations require authentication.
     *   **Headers**: `Content-Type: multipart/form-data`
     *   **Body**: Form data with a field named `pix` containing the image file.
     *   **Example (using `curl`)**:
-        ```bash
+        ``` bash
         curl -X POST \
           http://localhost/api/images/upload \
           -H 'Content-Type: multipart/form-data' \
@@ -274,7 +274,7 @@ For local development, you can run individual services outside of Docker Compose
 
 1.  **Install dependencies for each service:**
 
-    ```bash
+    ``` bash
     cd auth && npm install && cd ..
     cd image-service && npm install && cd ..
     cd worker && npm install && cd ..
@@ -288,17 +288,17 @@ For local development, you can run individual services outside of Docker Compose
     Open separate terminal tabs for each service:
 
     *   **Auth Service:**
-        ```bash
+        ``` bash
         cd auth
         npm run dev
         ```
     *   **Image Service:**
-        ```bash
+        ``` bash
         cd image-service
         npm run dev
         ```
     *   **Worker Service:**
-        ```bash
+        ``` bash
         cd worker
         npm run dev
         ```
@@ -314,7 +314,7 @@ For local development, you can run individual services outside of Docker Compose
 *(Note: Currently, no explicit test scripts are provided in `package.json` files. This section is a placeholder for future test integration.)*
 
 To run tests:
-```bash
+```  bash
 ## 🧪 Testing
 
 PixForge maintains a high standard of code quality with approximately 85% test coverage across the system. Each microservice includes its own suite of tests that can be executed independently. To run the tests, navigate to the specific service directory and use the npm test command:
