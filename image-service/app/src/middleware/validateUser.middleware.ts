@@ -5,7 +5,6 @@ import type { dbuser } from '../types/api.types.js'
 export type AuthRequest = Request & { user?: dbuser };
 
 const validateUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
-    // console.log(req);    
     const authHeader = req.headers['authorization']
     const tokenFromHeader = Array.isArray(authHeader) ? authHeader[0]?.split(' ')[1] : authHeader?.split(' ')[1];
     const token = req.cookies.accessToken || tokenFromHeader;
@@ -17,7 +16,7 @@ const validateUser = async (req: AuthRequest, res: Response, next: NextFunction)
     if(servicetype === "local") {
         url =`${req.protocol}://${req.hostname}:5600/api/v1/user/validate`
     }else{
-        url =`${req.protocol}://auth:5600/api/auth/validate`
+        url =`${req.protocol}://auth:5600/api/v1/user/validate`
     }
     axios({
         method: 'get',
@@ -28,7 +27,6 @@ const validateUser = async (req: AuthRequest, res: Response, next: NextFunction)
         withCredentials: true
     }).then((data) => {
         if(data.data.success === true){
-            console.log("User validation successfull")
             req.user = data.data.data.user
             next()
         }else{
@@ -36,6 +34,7 @@ const validateUser = async (req: AuthRequest, res: Response, next: NextFunction)
         }
     })
         .catch((err) => {
+            console.log("User validation failed", err);
             if (err.status === 404) {
                 return sendError(res, "User has loged out already or account deleted", 404, {cause : err})
             } else {

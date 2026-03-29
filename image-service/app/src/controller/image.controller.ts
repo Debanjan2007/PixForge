@@ -25,29 +25,34 @@ const imageUploader = catchAsync(async (req: AuthRequest , res: Response) => {
     if (!imageExtensions.includes(fileReult.ext)){
         return sendError(res , "Not a image" , 400 , null)
     }
-    // upload object to minio
-    const fileUpload = await uploadObjectinBucket(process.env.BUCKET_NAME as string , req.file.buffer , fileReult.ext)
-    if(!fileUpload){
-        return sendError(res , "Something went wrong while uploading image" , 500 , null)
+    try {
+        // upload object to minio
+        const fileUpload = await uploadObjectinBucket(process.env.BUCKET_NAME as string, req.file.buffer, fileReult.ext)
+        if (!fileUpload) {
+            return sendError(res, "Something went wrong while uploading image", 500, null)
+        }
+        const rawFileSignedUrl = await getSignedUrl(s3client, new GetObjectCommand({
+            Bucket: process.env.BUCKET_NAME as string,
+            Key: fileUpload.uniqueKey
+        }), {expiresIn: 3600}) // signed url valid for 1 hour
+        const userId = new mongoose.Types.ObjectId(req.user?._id) // reference to user id
+        const image = await Images.create({
+            imageId: fileUpload.uniqueKey,
+            rawFileSignedUrl: rawFileSignedUrl,
+            userId: userId,
+            contentType: fileUpload.contentType
+        })
+        const jobContent = { // jobcontent to get the url from imagekit and save it in db
+            fileId: fileUpload.uniqueKey,
+            userId: image._id,
+        }
+        await addJob('uploadImage', jobContent) // adding job to the controller for async task
+        console.log(`Job added to queue successfully`)
+        return sendSuccess(res, image, "Image uploaded successfully", 200)
+    }catch (error) {
+        console.log(error);
+        return sendError(res, "Internal server error", 500, {cause : error})
     }
-    const rawFileSignedUrl = await getSignedUrl(s3client , new GetObjectCommand({
-        Bucket: process.env.BUCKET_NAME as string,
-        Key: fileUpload.uniqueKey
-    }), { expiresIn: 3600 }) // signed url valid for 1 hour
-    const userId = new mongoose.Types.ObjectId(req.user?._id) // reference to user id
-    const image = await Images.create({
-        imageId: fileUpload.uniqueKey,
-        rawFileSignedUrl: rawFileSignedUrl,
-        userId: userId,
-        contentType: fileUpload.contentType
-    })
-    const jobContent = { // jobcontent to get the url from imagekit and save it in db
-        fileId: fileUpload.uniqueKey,
-        userId: image._id,
-    }
-    await addJob('uploadImage' , jobContent) // adding job to the controller for async task
-    console.log(`Job added to queue successfully`)
-    return sendSuccess(res , image , "Image uploaded successfully" , 200)
 })
 
 // get image by id
