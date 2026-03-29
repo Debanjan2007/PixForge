@@ -60,9 +60,9 @@ Version 2.0.0 - This project represents a significant refactor from a monolithic
 *   **Web Framework**: Express.js
 *   **Databases**:
     *   MongoDB: Primary database for user and image metadata (via Mongoose ODM).
-    *   Redis: Used for BullMQ job queue and API caching.
-*   **Object Storage**: MinIO (S3-compatible object storage)
-*   **Queue System**: BullMQ
+    *   Redis: Used for BullMQ job queue, API caching and temporary image lookup caching.
+*   **Object Storage**: MinIO (S3‑compatible object storage)
+*   **Queue System**: BullMQ (Redis‑backed)
 *   **Image Processing**: ImageKit.io (for advanced transformations)
 *   **Authentication**: JSON Web Tokens (JWT), bcrypt (for password hashing)
 *   **API Gateway**: Nginx
@@ -70,10 +70,10 @@ Version 2.0.0 - This project represents a significant refactor from a monolithic
 *   **Utilities**:
     *   `devdad-express-utils`: Custom utility library for Express.js.
     *   `multer`: Middleware for handling `multipart/form-data`, primarily for file uploads.
-    *   `@aws-sdk/client-s3`: AWS SDK for S3-compatible operations (MinIO).
+    *   `@aws-sdk/client-s3`: AWS SDK for S3‑compatible operations (MinIO).
+    *   `@aws-sdk/s3-request-presigner`: Generates presigned URLs for temporary access to objects.
     *   `file-type`: Detects file type from buffer.
     *   `uuid`: For generating unique identifiers.
-
 ## 🏗️ Architecture
 
 PixForge is designed as a microservice system, composed of several independent services that communicate with each other.
@@ -352,7 +352,14 @@ To run tests:
 ```bash
 ## 🧪 Testing
 
-PixForge maintains a high standard of code quality with approximately 85% test coverage across the system. Each microservice includes its own suite of tests that can be executed independently. To run the tests, navigate to the specific service directory and use the npm test command:
+PixForge maintains a high standard of code quality with approximately 85% test coverage across the system. Each microservice includes its own suite of tests that can be executed independently. Recent changes added integration tests for the image upload flow, ensuring that:
+
+*   The file type validation works correctly.
+*   A signed URL is generated and returned.
+*   A background job is queued for ImageKit processing.
+*   Redis caching of fetched images behaves as expected.
+
+To run the tests, navigate to the specific service directory and use the npm test command:
 
 ### Auth Service
 bash
@@ -398,15 +405,15 @@ For production deployments, consider:
 *   **`POST /register`**
     *   **Description**: Registers a new user.
     *   **Request Body**:
-        ```json
+        
         {
             "username": "john_doe",
             "email": "john.doe@example.com",
             "password": "securepassword123"
         }
-        ```
+        
     *   **Success Response (201 Created)**:
-        ```json
+        
         {
             "success": true,
             "message": "User registered successfully",
@@ -418,19 +425,19 @@ For production deployments, consider:
                 "updatedAt": "2024-03-20T10:00:00.000Z"
             }
         }
-        ```
+        
 
 *   **`POST /login`**
     *   **Description**: Logs in a user and sets a JWT cookie.
     *   **Request Body**:
-        ```json
+        
         {
             "email": "john.doe@example.com",
             "password": "securepassword123"
         }
-        ```
+        
     *   **Success Response (200 OK)**:
-        ```json
+        
         {
             "success": true,
             "message": "User logged in successfully",
@@ -440,7 +447,7 @@ For production deployments, consider:
                 "email": "john.doe@example.com"
             }
         }
-        ```
+        
         *(A `connect.sid` cookie containing the JWT will be set.)*
 
 ### Image Service
@@ -448,10 +455,10 @@ For production deployments, consider:
 **Base URL**: `http://localhost/api/v1/images`
 
 *   **`POST /upload`**
-    *   **Description**: Uploads an image file. Requires authentication.
+    *   **Description**: Uploads an image file. Requires authentication. The image is stored in MinIO, a presigned URL is returned, and a background job is queued to process the image with ImageKit.io.
     *   **Request**: `multipart/form-data` with a file field named `pix`.
     *   **Success Response (200 OK)**:
-        ```json
+        
         {
             "success": true,
             "message": "Image uploaded successfully",
@@ -465,13 +472,14 @@ For production deployments, consider:
                 "updatedAt": "2024-03-20T10:05:00.000Z"
             }
         }
-        ```
+        
+        *Note*: The `processedUrl` will be populated later by the worker service after ImageKit processing.
 
 *   **`GET /:id`**
     *   **Description**: Retrieves a single image by its `imageId`. Requires authentication.
     *   **Parameters**: `id` (string, path parameter - the `imageId` from upload response).
     *   **Success Response (200 OK)**:
-        ```json
+        
         {
             "success": true,
             "message": "Image fetched successfully from db",
@@ -482,8 +490,8 @@ For production deployments, consider:
                 "metadata": { /* ... image metadata ... */ }
             }
         }
-        ```
-        *(If `processedUrl` is not available, `rawFileSignedUrl` will be returned.)*
+        
+        *(If `processedUrl` is not yet available, the `rawFileSignedUrl` is returned instead.)*
 
 *   **`GET /`**
     *   **Description**: Lists images uploaded by the authenticated user with pagination. Requires authentication.
@@ -491,7 +499,7 @@ For production deployments, consider:
         *   `page` (number, optional, default: 1)
         *   `limit` (number, optional, default: 10)
     *   **Success Response (200 OK)**:
-        ```json
+        
         {
             "success": true,
             "message": "Images fetched successfully",
@@ -505,35 +513,34 @@ For production deployments, consider:
                     "contentType": "image/jpeg",
                     "createdAt": "2024-03-20T10:05:00.000Z",
                     "updatedAt": "2024-03-20T10:05:00.000Z"
-                },
+                }
                 // ... more image objects
             ]
         }
-        ```
+        
 
 *   **`DELETE /:id`**
     *   **Description**: Deletes an image by its `imageId`. Requires authentication.
     *   **Parameters**: `id` (string, path parameter - the `imageId` from upload response).
     *   **Success Response (200 OK)**:
-        ```json
+        
         {
             "success": true,
             "message": "Image deleted successfully",
             "data": null
         }
-        ```
+        
 
 ### Error Codes
 
 All API endpoints return a consistent error structure:
-```json
+
 {
     "success": false,
     "message": "Error description",
     "statusCode": 400, // or 401, 404, 500 etc.
     "data": null
 }
-```
 
 ## 🤝 Contributing
 
