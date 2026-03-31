@@ -29,6 +29,7 @@
     "devdad-express-utils": "^1.8.2",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.3.2",
     "file-type": "^21.3.3",
     "imagekit": "^6.0.0",
     "mongoose": "^9.1.4",

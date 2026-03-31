@@ -204,7 +204,7 @@ Before you begin, ensure you have the following installed:
     ```
 3.  **Start the services using Docker Compose:**
 
-    ```bash
+    ``` bash
     docker compose up --build -d
     ```
     *   `--build`: Rebuilds images if there are changes.
