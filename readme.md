@@ -75,9 +75,19 @@ Version 2.0.0 - This project represents a significant refactor from a monolithic
     *   `uuid`: For generating unique identifiers.
 
 ## 🏗️ Architecture
-
+Pixforge is a microservice-based architecture, HLD:
+```mermaid
+graph TD
+    User --HTTP Requests--> API
+    API --Objectput--> Object Storage
+    API --Add Job--> Queue
+    Queue --Push--> Worker
+    Worker --Process--> Imagekit
+    Worker --Delete--> Object Storage
+    Worker --Update--> MongoDB
+    
+```
 PixForge is designed as a microservice system, composed of several independent services that communicate with each other.
-
 ```mermaid
 graph TD
     User --HTTP Requests--> Nginx

@@ -19,6 +19,16 @@ const uploadImage = async (file : any) => {
         fileName: file.fileId.slice(0, file.fileId.lastIndexOf('.')),
         useUniqueFileName: true,
     })
+    if(!imagekitUrl){
+        console.log("imagekit url not found");
+        return null
+    }
+    await s3client.send(
+        new DeleteObjectCommand({
+            Bucket: process.env.BUCKET_NAME as string,
+            Key: file.fileId
+        })
+    )
     const jobContent = {
         fileId: file.fileId,
         userId: file.userId,
@@ -36,16 +46,9 @@ const delimageHandle = async (filedId: string , imageId: string) => {
             if(err){
                 console.log(err);
                 return false
-
             }
             console.log(res)
         })
-        await s3client.send(
-            new DeleteObjectCommand({
-                Bucket: process.env.BUCKET_NAME as string,
-                Key: imageId
-            })
-        )
         return true
     } catch (error) {
         console.log(error);
