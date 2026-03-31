@@ -79,11 +79,11 @@ Pixforge is a microservice-based architecture, HLD:
 ```mermaid
 graph TD
     User --HTTP Requests--> API
-    API --Objectput--> Object Storage
+    API --Objectput--> S3(Object Storage)
     API --Add Job--> Queue
     Queue --Push--> Worker
     Worker --Process--> Imagekit
-    Worker --Delete--> Object Storage
+    Worker --Delete--> S3(Object Storage)
     Worker --Update--> MongoDB
     
 ```
