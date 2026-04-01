@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>PixForge Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            background: radial-gradient(circle at 20% 20%, #1f2937, #020617);
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) scale(0.5);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-10vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .glass {
+            backdrop-filter: blur(12px);
+            background: rgba(17, 24, 39, 0.6);
+        }
+    </style>
+</head>
+
+<body class="text-white flex items-center justify-center h-screen relative">
+
+<!-- ✨ Particles -->
+<div id="particles"></div>
+
+<!-- Alert -->
+<div id="alertBox"
+     class="hidden fixed top-5 right-5 px-4 py-3 rounded-lg text-sm font-medium shadow-lg z-20"></div>
+
+<!-- Login Card -->
+<div class="glass p-8 rounded-2xl shadow-xl w-80 border border-gray-800 relative z-10">
+
+    <h1 class="text-2xl font-bold mb-6 text-center">Login</h1>
+
+    <input id="username" type="text" placeholder="Username"
+           class="w-full mb-4 p-2 rounded bg-gray-700 focus:outline-none" />
+
+    <input id="password" type="password" placeholder="Password"
+           class="w-full mb-6 p-2 rounded bg-gray-700 focus:outline-none" />
+
+    <button onclick="login()"
+            class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-semibold shadow-lg shadow-blue-500/20">
+        Login
+    </button>
+
+    <p class="text-sm mt-4 text-center text-gray-400">
+        Don't have an account?
+        <a href="register.html" class="text-blue-400 hover:underline">Register</a>
+    </p>
+</div>
+
+<script>
+    const API = "http://127.0.0.1:8080/api/auth";
+
+    function showAlert(message, type = "success") {
+        const alertBox = document.getElementById("alertBox");
+
+        alertBox.innerText = message;
+
+        if (type === "success") {
+            alertBox.className = "fixed top-5 right-5 px-4 py-3 rounded-lg text-sm font-medium shadow-lg bg-green-600 text-white z-20";
+        } else {
+            alertBox.className = "fixed top-5 right-5 px-4 py-3 rounded-lg text-sm font-medium shadow-lg bg-red-600 text-white z-20";
+        }
+
+        alertBox.classList.remove("hidden");
+
+        setTimeout(() => {
+            alertBox.classList.add("hidden");
+        }, 3000);
+    }
+
+    async function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        if (!username || !password) {
+            showAlert("Fill all fields", "error");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API}/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include",
+                body: JSON.stringify({ username, password })
+            });
+
+            if (res.status === 429) {
+                showAlert("Too many requests 🚫 Please wait and try again later.", "error");
+                return;
+            }
+
+            if (res.ok) {
+                showAlert("Login successful 🚀", "success");
+
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 1000);
+            } else {
+                const data = await res.json();
+                showAlert(data.message || "Invalid credentials", "error");
+            }
+
+        } catch (err) {
+            showAlert("Server error", "error");
+        }
+    }
+
+    // ✨ Particle generator
+    const particlesContainer = document.getElementById("particles");
+
+    function createParticle() {
+        const particle = document.createElement("div");
+        particle.classList.add("particle");
+
+        particle.style.left = Math.random() * 100 + "vw";
+        particle.style.animationDuration = (Math.random() * 5 + 3) + "s";
+
+        particlesContainer.appendChild(particle);
+
+        setTimeout(() => {
+            particle.remove();
+        }, 8000);
+    }
+
+    setInterval(createParticle, 120);
+</script>
+
+</body>
+
+</html>

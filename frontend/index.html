@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>PixForge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* 🌌 Animated Gradient Background */
+        body {
+            background: radial-gradient(circle at 20% 20%, #1f2937, #020617);
+            overflow-x: hidden;
+        }
+
+        /* ✨ Glitter particles */
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.7;
+            animation: float 6s infinite linear;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateY(100vh) scale(0.5);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(-10vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* 🧊 Glass effect */
+        .glass {
+            backdrop-filter: blur(10px);
+            background: rgba(17, 24, 39, 0.6);
+        }
+    </style>
+</head>
+
+<body class="text-white relative">
+
+<!-- ✨ Background Particles -->
+<div id="particles"></div>
+
+<!-- Navbar -->
+<nav class="flex justify-between items-center px-8 py-4 border-b border-gray-800 relative z-10">
+    <h1 class="text-xl font-bold tracking-wide">PixForge</h1>
+
+    <div class="space-x-4">
+        <a href="register.html" class="text-gray-300 hover:text-white">Register</a>
+        <a href="login.html" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
+            Login
+        </a>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="flex flex-col items-center justify-center text-center h-[80vh] px-6 relative z-10">
+
+    <h2 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+        <span id="typing"></span>
+        <span class="border-r-2 border-white ml-1 animate-pulse"></span>
+    </h2>
+
+    <p class="text-gray-300 max-w-xl mb-8">
+        PixForge lets you upload, process, and manage your images with speed and precision.
+        Designed for performance, built for scale.
+    </p>
+
+    <div class="space-x-4">
+        <a href="register.html"
+           class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl font-semibold shadow-lg shadow-blue-500/20">
+            Get Started
+        </a>
+
+        <a href="login.html"
+           class="border border-gray-600 hover:border-gray-400 px-6 py-3 rounded-xl">
+            Login
+        </a>
+    </div>
+
+</section>
+
+<!-- Features -->
+<section class="grid md:grid-cols-3 gap-6 px-8 pb-16 relative z-10">
+
+    <div class="glass p-6 rounded-xl border border-gray-800 shadow-lg">
+        <h3 class="text-lg font-semibold mb-2">⚡ Fast Uploads</h3>
+        <p class="text-gray-300 text-sm">
+            Optimized upload pipeline using queues and async processing.
+        </p>
+    </div>
+
+    <div class="glass p-6 rounded-xl border border-gray-800 shadow-lg">
+        <h3 class="text-lg font-semibold mb-2">🧠 Smart Processing</h3>
+        <p class="text-gray-300 text-sm">
+            Images are transformed and optimized automatically.
+        </p>
+    </div>
+
+    <div class="glass p-6 rounded-xl border border-gray-800 shadow-lg">
+        <h3 class="text-lg font-semibold mb-2">☁️ Scalable Storage</h3>
+        <p class="text-gray-300 text-sm">
+            Built with object storage & CDN-ready delivery.
+        </p>
+    </div>
+
+</section>
+
+<!-- Footer -->
+<footer class="text-center text-gray-500 text-sm pb-6 relative z-10">
+    © 2026 PixForge. Built by you.
+</footer>
+
+<script>
+    // ✨ Typing effect
+    const words = [
+        "Upload Images.",
+        "Process at Scale.",
+        "Deliver Instantly."
+    ];
+
+    let i = 0;
+    let j = 0;
+    let currentWord = "";
+    let isDeleting = false;
+
+    const typingElement = document.getElementById("typing");
+
+    function type() {
+        currentWord = words[i];
+
+        if (isDeleting) {
+            typingElement.innerText = currentWord.substring(0, j--);
+        } else {
+            typingElement.innerText = currentWord.substring(0, j++);
+        }
+
+        let speed = isDeleting ? 50 : 100;
+
+        if (!isDeleting && j === currentWord.length) {
+            speed = 1000;
+            isDeleting = true;
+        } else if (isDeleting && j === 0) {
+            isDeleting = false;
+            i = (i + 1) % words.length;
+            speed = 300;
+        }
+
+        setTimeout(type, speed);
+    }
+
+    type();
+
+    // ✨ Generate particles
+    const particlesContainer = document.getElementById("particles");
+
+    function createParticle() {
+        const particle = document.createElement("div");
+        particle.classList.add("particle");
+
+        particle.style.left = Math.random() * 100 + "vw";
+        particle.style.animationDuration = (Math.random() * 5 + 3) + "s";
+
+        particlesContainer.appendChild(particle);
+
+        setTimeout(() => {
+            particle.remove();
+        }, 8000);
+    }
+
+    setInterval(createParticle, 100);
+</script>
+
+</body>
+
+</html>
