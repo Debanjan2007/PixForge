@@ -18,16 +18,16 @@ const imageUploader = catchAsync(async (req: AuthRequest , res: Response) => {
     if(!req.file || !req.file.buffer){
         return sendError(res , "Please upload an image" , 400 , null)
     }
-    const fileReult = await fileTypeFromBuffer(req.file.buffer)
-    if(!fileReult){
+    const fileResult = await fileTypeFromBuffer(req.file.buffer)
+    if(!fileResult){
         return sendError(res , "Please upload an image" , 400 , null)
     }
-    if (!imageExtensions.includes(fileReult.ext)){
+    if (!imageExtensions.includes(fileResult.ext)){
         return sendError(res , "Not a image" , 400 , null)
     }
     try {
         // upload object to minio
-        const fileUpload = await uploadObjectinBucket(process.env.BUCKET_NAME as string, req.file.buffer, fileReult.ext)
+        const fileUpload = await uploadObjectinBucket(process.env.BUCKET_NAME as string, req.file.buffer, fileResult.ext)
         if (!fileUpload) {
             return sendError(res, "Something went wrong while uploading image", 500, null)
         }
@@ -40,6 +40,7 @@ const imageUploader = catchAsync(async (req: AuthRequest , res: Response) => {
             imageId: fileUpload.uniqueKey,
             rawFileSignedUrl: rawFileSignedUrl,
             userId: userId,
+            status: "processing",
             contentType: fileUpload.contentType
         })
         const jobContent = { // jobcontent to get the url from imagekit and save it in db
@@ -79,12 +80,7 @@ const getImageById = catchAsync(async (req: Request, res: Response) => {
         }
         let image: {} | null = null
         if(!imageData[0].processedUrl || typeof (imageData[0].processedUrl) === null){
-            image = {
-                imageId: imageData[0].imageId,
-                fileId: imageData[0].fileId,
-                url:imageData[0].rawFileSignedUrl,
-                metadata: imageData[0].metadata
-            }
+            return sendError(res , "Can't get the url , try again later" , 404 , null )
         }else {
             image = {
                 imageId: imageData[0].imageId,

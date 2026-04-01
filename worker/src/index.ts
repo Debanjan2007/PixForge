@@ -28,14 +28,12 @@ const s3client = new S3Client({
     forcePathStyle: true
 })
 
-const s3lists = await s3client.send(new ListBucketsCommand({}))
-console.log("The s3 client has been initialised successfully",s3lists);
 connectClient(process.env.REDIS_URL as string).then(() => {
-    console.log("Redis connection established");
+    console.log("Redis connection established✅🚀");
     workerConnet().then(() => {
-        console.log("Worker connection established");
+        console.log("Worker connection established✅");
     }).catch((err : any) => {
-        console.log("Error while connecting to worker", err);
+        console.log("Error while connecting to worker❌", err);
     })
 })
 .catch((err) => {

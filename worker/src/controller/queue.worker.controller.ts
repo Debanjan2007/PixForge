@@ -6,36 +6,38 @@ import { queue } from '../db/queue.connect.js'
 
 // upload an image to imagekit
 const uploadImage = async (file : any) => {
-    const image = await s3client.send(
-        new GetObjectCommand({
-            Bucket: process.env.BUCKET_NAME as string,
-            Key: file.fileId
+    try {
+        const image = await s3client.send(
+            new GetObjectCommand({
+                Bucket: process.env.BUCKET_NAME as string,
+                Key: file.fileId
+            })
+        )
+        const unit8Array: unknown = await image?.Body?.transformToByteArray()
+        const buffer = Buffer.from(unit8Array as ArrayBuffer)
+        const imagekitUrl = await imagekitClient.files.upload({
+            file: await toFile(buffer),
+            fileName: file.fileId.slice(0, file.fileId.lastIndexOf('.')),
+            useUniqueFileName: true,
         })
-    )
-    const unit8Array : unknown = await image?.Body?.transformToByteArray()
-    const buffer = Buffer.from(unit8Array as ArrayBuffer)
-    const imagekitUrl = await imagekitClient.files.upload({
-        file: await toFile(buffer),
-        fileName: file.fileId.slice(0, file.fileId.lastIndexOf('.')),
-        useUniqueFileName: true,
-    })
-    if(!imagekitUrl){
-        console.log("imagekit url not found");
-        return null
+        await s3client.send(
+            new DeleteObjectCommand({
+                Bucket: process.env.BUCKET_NAME as string,
+                Key: file.fileId
+            })
+        )
+        const jobContent = {
+            fileId: file.fileId,
+            userId: file.userId,
+            imagekit: imagekitUrl
+        }
+        await queue.add("processed", jobContent)
+        return imagekitUrl
     }
-    await s3client.send(
-        new DeleteObjectCommand({
-            Bucket: process.env.BUCKET_NAME as string,
-            Key: file.fileId
-        })
-    )
-    const jobContent = {
-        fileId: file.fileId,
-        userId: file.userId,
-        imagekit: imagekitUrl
+    catch (err){
+        console.log("Job failed to upload image to imagekit ",err)
+        return err
     }
-    await queue.add("processed" , jobContent)
-    return imagekitUrl
 }
 
 const delimageHandle = async (filedId: string , imageId: string) => {

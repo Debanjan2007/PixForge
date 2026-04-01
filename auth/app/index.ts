@@ -17,9 +17,9 @@ console.log(path.join(__dirname, '.env'));
 connectDB().then(async () => {
     await  connecttoRedis(process.env.REDIS_URL as string)
     app.listen(port, () => {
-        console.log(`Auth Server is running at http://localhost:${port}`);
+        console.log(`✅🚀Auth Server is running at http://localhost:${port}`);
     })
 }).catch((err) => {
-    console.error('Startup failed:', err);
+    console.error('❌Startup failed:', err);
     process.exit(1);
 })

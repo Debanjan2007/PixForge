@@ -5,7 +5,6 @@ import { app } from './app.js'
 import { connectDB , getDBStatus } from 'devdad-express-utils'
 import {
     S3Client,
-    ListBucketsCommand,
     CreateBucketCommand
 } from '@aws-sdk/client-s3'
 import { bucketExists } from './src/utils/bucketExist.util.js'
@@ -14,8 +13,9 @@ import { workerConnet } from './src/db/worker.connect.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-dotenv.config({ path: path.join(__dirname, '.env') }) 
-const port = 4500
+dotenv.config({ path: path.join(__dirname, '.env') })
+
+const port = 4500 // feel free to change the port
 const s3client = new S3Client({
     endpoint: process.env.MINIO_ENDPOINT as string,
     region: process.env.MINIO_REGION as string,
@@ -25,7 +25,6 @@ const s3client = new S3Client({
     },
     forcePathStyle: true
 })
-
 
 connectDB()
 .then(async () => {
@@ -39,15 +38,13 @@ connectDB()
             })
         )
     }
-    const s3lists = await s3client.send(new ListBucketsCommand({}))
-    console.log("The s3 client has been initialised successfully",s3lists);
     await connectToClient(process.env.REDIS_URL as string)
     app.listen(port , () => {
-        console.log(`Image processing service is now running on http://localhost:${port}`);        
+        console.log(`✅🚀Image processing service is now running on http://localhost:${port}`);
     })
 })
 .catch((err) => {
-    console.error(`Image processing start up failed ${err}`);    
+    console.error(`❌Image processing start up failed ${err}`);
     process.exit(1)
 })
 export {

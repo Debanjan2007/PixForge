@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq'
-import { imagekitClient } from '../index.js'
 import { uploadImage , delimageHandle } from '../controller/queue.worker.controller.js'
+
 let worker : Worker
 const workerConnet = async () => {
     worker = new Worker('image-upload', async (job) => {

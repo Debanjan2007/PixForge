@@ -4,7 +4,7 @@ import type { Request, Response } from 'express'
 import type { dbuser, user } from '../types/api.types.js'
 import { client } from '../db/redis.db.connect.js'
 import { v4 as uuid } from 'uuid'
-
+import jwt from "jsonwebtoken";
 
 export type AuthRequest = Request & { user?: dbuser };
 const genaccessToken = async function (uid: string): Promise<string | null | undefined> {
@@ -22,6 +22,20 @@ const genaccessToken = async function (uid: string): Promise<string | null | und
 }
 
 // please delete the token-uid from redis while logging in again 
+
+const AboutUser = catchAsync(async (req, res) => {
+    const token = req.cookies.accessToken;
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    try {
+        const user = jwt.verify(token, process.env.JWT_AUTH as string);
+        return sendSuccess(res , user , "user validation successfull" , 200)
+    } catch (err){
+        console.log(err)
+        return sendError(res, "Invalid token" , 401 , {cause : err})
+    }
+})
 
 const reguser = catchAsync(async (req: Request, res: Response) => {
     try {
@@ -47,8 +61,8 @@ const reguser = catchAsync(async (req: Request, res: Response) => {
         }
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none',
+            secure: false , // process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         })
         return sendSuccess(
@@ -88,8 +102,8 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
         }
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none',
+            secure:  false,// process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         })
         return sendSuccess(
@@ -149,6 +163,7 @@ const validateUser = catchAsync(async (req: AuthRequest , res) => {
     return sendSuccess(res , {user: req.user} , "User validation successfull" , 200)
 })
 export {
+    AboutUser ,
     reguser as registerUser,
     loginUser,
     logout,

@@ -8,6 +8,7 @@ interface ImagesDocument extends mongoose.Document {
     rawFileSignedUrl: string,
     userId: mongoose.Types.ObjectId,
     processedUrl: string,
+    status: string,
     metadata: imagemetadata
 }
 
@@ -38,6 +39,10 @@ const imagesSchema = new mongoose.Schema(
         processedUrl: {
             type: String,
             default: null
+        },
+        status: {
+            type: String,
+            enum: ["processing","uploaded"]
         },
         metadata: {
             name: {

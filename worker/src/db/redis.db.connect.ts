@@ -3,6 +3,7 @@ import type { RedisClientType } from 'redis';
 let redisClient : RedisClientType
 
 const connectClient = async (redisUrl : string) => {
+    if(!redisUrl) throw new Error("REDIS_URL not defined")
     redisClient = createClient({url: redisUrl})
     redisClient.connect().then(() => {
         console.log("redis Connection done");
