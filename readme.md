@@ -234,10 +234,10 @@ The API is exposed via Nginx on `http://localhost:8080`. All API routes are pref
 First, you need to register and log in to obtain a JWT token, which will be stored in your browser's cookies.
 
 *   **Register User**
-    *   `POST /api/user/register`
+    *   `POST /api/auth/register`
     *   **Body**: `{"username": "testuser", "password": "password123"}`
 *   **Login User**
-    *   `POST /api/user/login`
+    *   `POST /api/auth/login`
     *   **Body**: `{"password": "password123"}`
 
 After successful login, subsequent requests will automatically use the JWT token stored in cookies.
@@ -247,7 +247,7 @@ After successful login, subsequent requests will automatically use the JWT token
 All image operations require authentication.
 
 1.  **Upload an Image**
-    *   `POST /apiimages/upload`
+    *   `POST /api/images/upload`
     *   **Headers**: `Content-Type: multipart/form-data`
     *   **Body**: Form data with a field named `pix` containing the image file.
     *   **Example (using `curl`)**:
