@@ -6,7 +6,7 @@
 A scalable and distributed image processing microservice system designed to handle image uploads, transformations, and management with robust authentication.
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=flat-square)](https://github.com/Debanjan2007/PixForge/actions)
-[![Code Coverage](https://img.shields.io/badge/coverage-85%25-yellowgreen?style=flat-square)](https://github.com/Debanjan2007/PixForge/coverage)
+[![Code Coverage](https://img.shields.io/badge/coverage-95%25-yellowgreen?style=flat-square)](https://github.com/Debanjan2007/PixForge/coverage)
 [![Latest Version](https://img.shields.io/github/package-json/v/Debanjan2007/PixForge/main?style=flat-square)](https://github.com/Debanjan2007/PixForge/releases)
 [![License](https://img.shields.io/github/license/Debanjan2007/PixForge?style=flat-square)](LICENSE)
 [![Issues](https://img.shields.io/github/issues/Debanjan2007/PixForge?style=flat-square)](https://github.com/Debanjan2007/PixForge/issues)
@@ -85,7 +85,6 @@ graph TD
     Worker --Process--> Imagekit
     Worker --Delete--> S3(Object Storage)
     Worker --Update--> MongoDB
-    
 ```
 PixForge is designed as a microservice system, composed of several independent services that communicate with each other.
 ```mermaid
@@ -187,7 +186,7 @@ Before you begin, ensure you have the following installed:
 
 2.  **Configure Environment Variables:**
 
-    Just one `.env` file is required for all services. 
+    Just one `.env` file is required for all services.
 
     ``` bash
     cd compose

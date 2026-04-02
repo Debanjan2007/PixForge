@@ -103,8 +103,12 @@
 
 <!-- Image Modal -->
 <div id="imageModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-30">
-    <div class="glass p-4 rounded-xl max-w-lg">
-        <img id="modalImage" class="rounded-lg" />
+    <div class="glass p-4 rounded-xl max-w-lg text-center">
+        <img id="modalImage" class="rounded-lg mb-4" />
+
+        <button id="deleteBtn" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg">
+            Delete Image 🗑️
+        </button>
     </div>
 </div>
 
@@ -155,11 +159,16 @@
 
     <!-- Grid -->
     <div>
-        <h2 class="text-lg font-semibold mb-4">Your Images</h2>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-semibold">Your Images</h2>
+
+            <button onclick="fetchImages()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-lg text-sm">
+                Refresh 🔄
+            </button>
+        </div>
 
         <div id="imageGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
     </div>
-
 </div>
 
 <script>
@@ -167,6 +176,7 @@
     const IMAGEAPI = "http://127.0.0.1:8080/api/images";
 
     let currentUser = null;
+    let currentImageId = null;
 
     function showAlert(message, type = "success") {
         const alertBox = document.getElementById("alertBox");
@@ -274,14 +284,14 @@
     }
 
     async function openModal(id) {
+        currentImageId = id; // ✅ store ID
+
         const res = await fetch(`${IMAGEAPI}/${id}`, {
             credentials: "include"
         });
 
         const raw = await res.json();
         const data = typeof raw.data === "string" ? JSON.parse(raw.data) : raw.data;
-        console.log(data);
-
         document.getElementById("modalImage").src = data.url;
         document.getElementById("imageModal").classList.remove("hidden");
     }
@@ -305,6 +315,28 @@
     }
 
     const particlesContainer = document.getElementById("particles");
+
+    async function deleteImage() {
+        if (!currentImageId) return;
+
+        try {
+            const res = await fetch(`${IMAGEAPI}/${currentImageId}`, {
+                method: "DELETE",
+                credentials: "include"
+            });
+
+            if (res.ok) {
+                showAlert("Deleted 🗑️");
+                document.getElementById("imageModal").classList.add("hidden");
+                fetchImages(); // refresh grid
+            } else {
+                showAlert("Delete failed", "error");
+            }
+        } catch {
+            showAlert("Error deleting", "error");
+        }
+    }
+    document.getElementById("deleteBtn").onclick = deleteImage;
 
     function createParticle() {
         const p = document.createElement("div");
