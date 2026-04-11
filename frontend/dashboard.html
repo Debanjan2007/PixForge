@@ -235,21 +235,41 @@
         }
     }
 
+    async function uploadFile(presignedUrl, file) {
+        try {
+            const response = await fetch(presignedUrl, {
+                method: 'PUT',
+                headers: {
+                    "Content-Disposition": "inline",
+                    "Content-Type": file.type
+                },
+                body: file,
+            });
+
+            if (response.ok) {
+                console.log('Upload successful!');
+            } else {
+                console.error('Upload failed:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error during upload:', error);
+        }
+    }
 
     async function uploadImage() {
         const file = document.getElementById("fileInput").files[0];
         if (!file) return showAlert("Select a file", "error");
 
-        const formData = new FormData();
-        formData.append("pix", file);
-
-        const res = await fetch(`${IMAGEAPI}/upload`, {
-            method: "POST",
+        const res = await fetch(`${IMAGEAPI}/upload?filetype=${file.type}`, {
+            method: "PUT",
             credentials: "include",
-            body: formData
+            // body: formData
         });
-
         if (res.ok) {
+            const resdata = await res.json();
+            console.log(resdata.data.presignedUrl)
+            const { presignedUrl } = resdata.data;
+            await uploadFile(presignedUrl, file);
             showAlert("Uploaded 🚀");
             setTimeout(fetchImages, 800);
         } else {

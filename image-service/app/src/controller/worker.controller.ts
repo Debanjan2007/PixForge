@@ -1,10 +1,10 @@
-import type { processedImageJob } from "../types/api.types.js";
+import type {processedImageJob} from "../types/api.types.js";
 import {Images} from "../model/images.model.js";
 
 const updateImageProcessedUrl = async (job: processedImageJob) => {
     try {
-        await Images.findByIdAndUpdate(
-            job.userId,
+        await Images.findOneAndUpdate(
+            {imageId: job.fileId},
             {
                 status: "uploaded",
                 processedUrl: `${job.imagekit.url}?tr=f-webp`,
@@ -28,8 +28,8 @@ const updateImageProcessedUrl = async (job: processedImageJob) => {
                 returnDocument: 'after'
             }
         )
-    }catch (err){
-        console.log("Error while updating image processed url",err)
+    } catch (err) {
+        console.log("Error while updating image processed url", err)
         return err
     }
 };

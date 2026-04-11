@@ -16,7 +16,6 @@ const imagesSchema = new mongoose.Schema(
     {
         imageId: { // unique id of the image same in s3 bucket
             type: String,
-            required: true,
             unique: true,
         },
         fileId: { // get the fileid from the imagekit response
@@ -25,7 +24,7 @@ const imagesSchema = new mongoose.Schema(
         },
         rawFileSignedUrl: {
             type: String,
-            required: true
+            default: null
         },
         userId: {
             type: mongoose.Types.ObjectId,
@@ -34,7 +33,7 @@ const imagesSchema = new mongoose.Schema(
         },
         contentType: {
             type: String,
-            required: true
+            default: null
         },
         processedUrl: {
             type: String,
@@ -42,6 +41,7 @@ const imagesSchema = new mongoose.Schema(
         },
         status: {
             type: String,
+            required: true,
             enum: ["processing","uploaded"]
         },
         metadata: {

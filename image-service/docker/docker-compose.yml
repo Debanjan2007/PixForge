@@ -12,7 +12,20 @@ services:
     volumes:
       - minio-data:/data
     restart: unless-stopped
-
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: /bin/sh -c "/init-minio.sh"
+    volumes:
+      - ./init-minio.sh:/init-minio.sh
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USERNAME}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
 volumes:
   minio-data:
   redis_roadmap_image_service_db:
+
+networks:
+  default:
+    name: roadmap-image-service-network

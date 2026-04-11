@@ -6,7 +6,7 @@ const workerConnet = async () => {
     worker = new Worker('image-upload', async (job) => {
         switch(job.name){
             case 'uploadImage' :
-                console.log("Uploading image")
+                console.log("Uploading image" , job.data)
                 await uploadImage(job.data as string)
                 break
             case 'deleteImage' :

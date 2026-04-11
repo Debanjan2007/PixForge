@@ -13,7 +13,7 @@ const queue = new Queue('image-upload' , {
 //     }
 // })
 // add jobs to controller via this function
-const addJob = async (jobName : string , jobContent: any )=> {
+const addJob = async(jobName : string , jobContent: any )=> {
     await queue.add(jobName , jobContent , {
         attempts: 5,
         backoff:{
@@ -22,6 +22,7 @@ const addJob = async (jobName : string , jobContent: any )=> {
         },
         removeOnComplete: true
     })
+    console.log("Job added to queue")
 }
 export {
     queue ,

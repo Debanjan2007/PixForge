@@ -14,7 +14,6 @@ interface dbuser {
 }
 interface processedImageJob {
     fileId: string ,
-    userId: string,
     imagekit: any,
 }
 export type {

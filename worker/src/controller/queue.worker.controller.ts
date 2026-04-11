@@ -10,25 +10,24 @@ const uploadImage = async (file : any) => {
         const image = await s3client.send(
             new GetObjectCommand({
                 Bucket: process.env.BUCKET_NAME as string,
-                Key: file.fileId
+                Key: file
             })
         )
         const unit8Array: unknown = await image?.Body?.transformToByteArray()
         const buffer = Buffer.from(unit8Array as ArrayBuffer)
         const imagekitUrl = await imagekitClient.files.upload({
             file: await toFile(buffer),
-            fileName: file.fileId.slice(0, file.fileId.lastIndexOf('.')),
+            fileName: file,
             useUniqueFileName: true,
         })
         await s3client.send(
             new DeleteObjectCommand({
                 Bucket: process.env.BUCKET_NAME as string,
-                Key: file.fileId
+                Key: file
             })
         )
         const jobContent = {
-            fileId: file.fileId,
-            userId: file.userId,
+            fileId: file,
             imagekit: imagekitUrl
         }
         await queue.add("processed", jobContent)
