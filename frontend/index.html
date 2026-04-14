@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8" />
     <title>PixForge</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-
+    <script src="src/main.js" type="module"></script>
+    <link rel="stylesheet" href="src/style.css" />
     <style>
         /* 🌌 Animated Gradient Background */
         body {
@@ -56,8 +56,8 @@
     <h1 class="text-xl font-bold tracking-wide">PixForge</h1>
 
     <div class="space-x-4">
-        <a href="register.html" class="text-gray-300 hover:text-white">Register</a>
-        <a href="login.html" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
+        <a href="/register.html" class="text-gray-300 hover:text-white">Register</a>
+        <a href="/login.html" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
             Login
         </a>
     </div>
@@ -121,65 +121,6 @@
     © 2026 PixForge. Built by you.
 </footer>
 
-<script>
-    // ✨ Typing effect
-    const words = [
-        "Upload Images.",
-        "Process at Scale.",
-        "Deliver Instantly."
-    ];
-
-    let i = 0;
-    let j = 0;
-    let currentWord = "";
-    let isDeleting = false;
-
-    const typingElement = document.getElementById("typing");
-
-    function type() {
-        currentWord = words[i];
-
-        if (isDeleting) {
-            typingElement.innerText = currentWord.substring(0, j--);
-        } else {
-            typingElement.innerText = currentWord.substring(0, j++);
-        }
-
-        let speed = isDeleting ? 50 : 100;
-
-        if (!isDeleting && j === currentWord.length) {
-            speed = 1000;
-            isDeleting = true;
-        } else if (isDeleting && j === 0) {
-            isDeleting = false;
-            i = (i + 1) % words.length;
-            speed = 300;
-        }
-
-        setTimeout(type, speed);
-    }
-
-    type();
-
-    // ✨ Generate particles
-    const particlesContainer = document.getElementById("particles");
-
-    function createParticle() {
-        const particle = document.createElement("div");
-        particle.classList.add("particle");
-
-        particle.style.left = Math.random() * 100 + "vw";
-        particle.style.animationDuration = (Math.random() * 5 + 3) + "s";
-
-        particlesContainer.appendChild(particle);
-
-        setTimeout(() => {
-            particle.remove();
-        }, 8000);
-    }
-
-    setInterval(createParticle, 100);
-</script>
 
 </body>
 
