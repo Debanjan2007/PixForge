@@ -44,7 +44,8 @@ connectDB()
     })
 })
 .catch((err) => {
-    console.error(`❌Image processing start up failed ${err}`);
+    console.log(err)
+    console.error(`❌Image processing service start up failed ${err}`);
     process.exit(1)
 })
 export {
