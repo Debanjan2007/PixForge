@@ -20,7 +20,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser());
 app.use(cors({
-    origin: "http://127.0.0.1:5500", // or your frontend URL
+    origin: "http://localhost:5500", // or your front URL
     credentials: true
 }));
 app.use(errorHandler)

@@ -10,7 +10,6 @@ import { client } from '../db/redis.db.connect.js'
 export const verifyJwt = catchAsync(async (req : AuthRequest , res , next) => {
     try {
         const token = req.cookies.accessToken;
-        console.log(token)
         if(!token || typeof(token) !== 'string'){
             return sendError(res , "Access token not found, please login again" , 401 , null)
         }
@@ -33,7 +32,6 @@ export const verifyJwt = catchAsync(async (req : AuthRequest , res , next) => {
         if(user.isLogedin === false){
             return sendError(res , "User has been loged out" , 400 , null)
         }
-        console.log(user)
         req.user = user;
         return next();
     } catch (error) {
