@@ -26,7 +26,7 @@ mc mb local/media || true
 # 🔥 Configure webhook ONLY if not already set
 mc admin config get local notify_webhook:1 >/dev/null 2>&1 || \
 mc admin config set local notify_webhook:1 \
-  endpoint="http://host.docker.internal:4500/storage-events" \
+  endpoint="http://image-processor:4500/storage-events" \
   queue_limit="10"
 
 # Remove old event

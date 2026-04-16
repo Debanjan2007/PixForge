@@ -13,8 +13,6 @@ services:
       db:
         condition: service_healthy
     restart: always
-    expose:
-      - "5600"
     networks: 
       - image-processor-network
 
@@ -67,6 +65,16 @@ services:
     networks:
       - image-processor-network
 
+# Frontend service
+  frontend:
+    build:
+      dockerfile: Dockerfile
+      context: ../frontend
+    networks:
+      - image-processor-network
+    ports:
+      - '8080:80'
+
 
 # object storage (minio)
   minio:
@@ -91,6 +99,18 @@ services:
     restart: unless-stopped
     networks:
       - image-processor-network
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: /bin/sh -c "/init-minio.sh"
+    volumes:
+      - ./init-minio.sh:/init-minio.sh
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USERNAME}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    networks:
+      - image-processor-network
   # database (mongodb)
   db:
     image: mongo:7.0
@@ -112,10 +132,8 @@ services:
 
 #  web server (nginx)
   server:
-    image: nginx
+    image: nginx:alpine
     container_name: nginx-server
-    ports:
-      - 8080:80
     depends_on:
       - auth
       - image-processor
