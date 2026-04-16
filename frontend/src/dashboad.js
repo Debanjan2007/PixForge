@@ -1,5 +1,8 @@
-const API = "http://server:80/api/auth";
-const IMAGEAPI = "http://server:80/api/images";
+// const API = "http://server:80/api/auth";
+// const IMAGEAPI = "http://server:80/api/images";
+const API = "http://localhost:5600/api/v1/user"
+const IMAGEAPI = "http://localhost:4500/api/v1/images"
+
 
 let currentUser = null;
 let currentImageId = null;
@@ -183,7 +186,6 @@ async function deleteImage() {
         showAlert("Error deleting", "error");
     }
 }
-document.getElementById("deleteBtn").onclick = deleteImage;
 
 function createParticle() {
     const p = document.createElement("div");
@@ -203,3 +205,10 @@ async function init() {
 }
 
 init();
+// event listeners
+document.getElementById("deleteBtn").addEventListener('click', deleteImage)
+document.getElementById('logOutUser').addEventListener('click' , logoutUser)
+document.getElementById('deleteAcco').addEventListener('click', deleteAccount)
+document.getElementById('OpenProfileModal').addEventListener('click', openProfileModal)
+document.getElementById('uploader').addEventListener('click', uploadImage)
+document.getElementById('fetchImages').addEventListener('click', fetchImages)

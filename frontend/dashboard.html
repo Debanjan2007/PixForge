@@ -118,11 +118,11 @@
         <h2 class="text-xl font-semibold mb-4">Profile</h2>
         <p id="profileUsername" class="text-gray-300 mb-6"></p>
 
-        <button onclick="logoutUser()" class="w-full mb-3 bg-blue-600 hover:bg-blue-700 py-2 rounded-lg">
+        <button id="logOutUser" class="w-full mb-3 bg-blue-600 hover:bg-blue-700 py-2 rounded-lg">
             Logout
         </button>
 
-        <button onclick="deleteAccount()" class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg">
+        <button id="deleteAcco" class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg">
             Delete Account
         </button>
     </div>
@@ -135,7 +135,7 @@
     <div class="flex items-center space-x-3">
         <span id="welcomeText" class="text-sm text-gray-400">Welcome</span>
 
-        <div onclick="openProfileModal()"
+        <div id="OpenProfileModal"
              class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg font-bold cursor-pointer hover:bg-gray-600">
             U
         </div>
@@ -151,7 +151,7 @@
 
         <input id="fileInput" type="file" class="mb-4 block text-sm text-gray-300" />
 
-        <button onclick="uploadImage()"
+        <button id="uploader"
                 class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg shadow-lg shadow-blue-500/20">
             Upload
         </button>
@@ -162,7 +162,7 @@
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-semibold">Your Images</h2>
 
-            <button onclick="fetchImages()" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-lg text-sm">
+            <button id="fetchImages" class="bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-lg text-sm">
                 Refresh 🔄
             </button>
         </div>

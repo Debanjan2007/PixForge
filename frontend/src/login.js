@@ -1,5 +1,5 @@
-const API = "http://server:80/api/auth";
-
+// const API = "http://server:80/api/auth";
+const API = "http://localhost:5600/api/v1/user"
 function showAlert(message, type = "success") {
     const alertBox = document.getElementById("alertBox");
 
@@ -17,7 +17,6 @@ function showAlert(message, type = "success") {
         alertBox.classList.add("hidden");
     }, 3000);
 }
-
 async function login() {
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
@@ -76,3 +75,4 @@ function createParticle() {
 }
 
 setInterval(createParticle, 120);
+document.getElementById('loginBtn').addEventListener('click', login)

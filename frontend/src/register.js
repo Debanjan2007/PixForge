@@ -1,4 +1,6 @@
-const API = "http://server:80/api/auth";
+// const API = "http://server:80/api/auth";
+const API = "http://localhost:5600/api/v1/user"
+
 
 function showAlert(message, type = "success") {
     const alertBox = document.getElementById("alertBox");
@@ -19,6 +21,7 @@ function showAlert(message, type = "success") {
 }
 
 async function register() {
+    console.log("Hello this is register button")
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
@@ -76,3 +79,4 @@ function createParticle() {
 }
 
 setInterval(createParticle, 120);
+document.getElementById("registerBtn").addEventListener('click', register);
