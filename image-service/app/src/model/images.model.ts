@@ -5,7 +5,6 @@ interface ImagesDocument extends mongoose.Document {
     imageId: string,
     fileId: string,
     contentType: string
-    rawFileSignedUrl: string,
     userId: mongoose.Types.ObjectId,
     processedUrl: string,
     status: string,
@@ -21,10 +20,6 @@ const imagesSchema = new mongoose.Schema(
         fileId: { // get the fileid from the imagekit response
             type: String,
             default: null,
-        },
-        rawFileSignedUrl: {
-            type: String,
-            default: null
         },
         userId: {
             type: mongoose.Types.ObjectId,
