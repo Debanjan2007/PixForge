@@ -1,5 +1,5 @@
-// const API = "http://server:80/api/auth";
-const API = "http://localhost:5600/api/v1/user"
+const API = "http://localhost:5000/api/auth";
+// const API = "http://localhost:5600/api/v1/user"
 
 
 function showAlert(message, type = "success") {
@@ -31,6 +31,7 @@ async function register() {
     }
 
     try {
+        console.log("Inside try block")
         const res = await fetch(`${API}/register`, {
             method: "POST",
             headers: {
@@ -57,6 +58,7 @@ async function register() {
         }
 
     } catch (err) {
+        console.log("Error while registration:",err);
         showAlert("Server error", "error");
     }
 }

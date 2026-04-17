@@ -1,8 +1,5 @@
-// const API = "http://server:80/api/auth";
-// const IMAGEAPI = "http://server:80/api/images";
-const API = "http://localhost:5600/api/v1/user"
-const IMAGEAPI = "http://localhost:4500/api/v1/images"
-
+const API = "http://localhost:5000/api/auth";
+const IMAGEAPI = "http://localhost:5000/api/images";
 
 let currentUser = null;
 let currentImageId = null;
@@ -68,10 +65,6 @@ async function uploadFile(presignedUrl, file) {
     try {
         const response = await fetch(presignedUrl, {
             method: 'PUT',
-            headers: {
-                "Content-Disposition": "inline",
-                "Content-Type": file.type
-            },
             body: file,
         });
 
@@ -92,15 +85,18 @@ async function uploadImage() {
     const res = await fetch(`${IMAGEAPI}/upload?filetype=${file.type}`, {
         method: "PUT",
         credentials: "include",
-        // body: formData
     });
     console.log(res)
     if (res.ok) {
         const resdata = await res.json();
         console.log(resdata.data.presignedUrl)
         const { presignedUrl } = resdata.data;
-        await uploadFile(presignedUrl, file);
-        showAlert("Uploaded 🚀");
+        uploadFile(presignedUrl, file).then( (res) => {
+            console.log(res)
+            showAlert("Uploaded 🚀")
+        }).catch( (err) => {
+            console.log(err)
+        })
         setTimeout(fetchImages, 800);
     } else {
         showAlert("Upload failed", "error");
@@ -204,11 +200,11 @@ async function init() {
     await fetchImages();
 }
 
-init();
+await init();
 // event listeners
 document.getElementById("deleteBtn").addEventListener('click', deleteImage)
 document.getElementById('logOutUser').addEventListener('click' , logoutUser)
-document.getElementById('deleteAcco').addEventListener('click', deleteAccount)
+document.getElementById('deleteAcc').addEventListener('click', deleteAccount)
 document.getElementById('OpenProfileModal').addEventListener('click', openProfileModal)
 document.getElementById('uploader').addEventListener('click', uploadImage)
 document.getElementById('fetchImages').addEventListener('click', fetchImages)

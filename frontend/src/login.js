@@ -1,5 +1,5 @@
-// const API = "http://server:80/api/auth";
-const API = "http://localhost:5600/api/v1/user"
+const API = "http://localhost:5000/api/auth";
+// const API = "http://localhost:5600/api/v1/user"
 function showAlert(message, type = "success") {
     const alertBox = document.getElementById("alertBox");
 
