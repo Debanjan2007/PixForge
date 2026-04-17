@@ -24,7 +24,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(errorHandler);
 app.use(cors({
-    origin: "http://localhost:5500", // or your front URL
+    origin: true, // or your frontend URL now i am just accepting any request from anywhere
     credentials: true
 }));
 app.post("/storage-events", async (req, res) => {
