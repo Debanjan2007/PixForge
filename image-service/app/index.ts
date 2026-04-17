@@ -23,7 +23,19 @@ const s3client = new S3Client({
         accessKeyId: process.env.MINIO_ROOT_USERNAME as string,
         secretAccessKey: process.env.MINIO_ROOT_PASSWORD as string,
     },
-    forcePathStyle: true
+    forcePathStyle: true,
+    requestChecksumCalculation: "WHEN_REQUIRED",
+})
+
+const presignClient = new S3Client({
+    endpoint: "http://localhost:9000",
+    region: process.env.MINIO_REGION as string,
+    credentials: {
+        accessKeyId: process.env.MINIO_ROOT_USERNAME as string,
+        secretAccessKey: process.env.MINIO_ROOT_PASSWORD as string,
+    },
+    forcePathStyle: true,
+    requestChecksumCalculation: "WHEN_REQUIRED",
 })
 
 connectDB()
@@ -49,5 +61,6 @@ connectDB()
     process.exit(1)
 })
 export {
-    s3client
+    s3client ,
+    presignClient
 }
