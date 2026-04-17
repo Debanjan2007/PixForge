@@ -8,11 +8,6 @@ import type {AuthRequest} from '../middleware/validateUser.middleware.js'
 import {client} from '../db/redis.db.connect.js'
 import type {dbuser} from "../types/api.types.js";
 import {imageExtensions} from "../constants/image.types.constant.js";
-// import {fileTypeFromBuffer} from "file-type";
-// import {imageExtensions} from '../constants/image.types.constant.js'
-// import {getSignedUrl} from '@aws-sdk/s3-request-presigner'
-// import {s3client} from "../../index.js";
-// import {GetObjectCommand} from "@aws-sdk/client-s3";
 
 // image uploading
 const imageUploader = catchAsync(async (req: AuthRequest, res: Response) => {
@@ -24,7 +19,7 @@ const imageUploader = catchAsync(async (req: AuthRequest, res: Response) => {
     try {
         const userId = new mongoose.Types.ObjectId(user._id)
         // generate presigned url in s3
-        const {presignedUrl , uniqueKey} = await uploadObjectinBucket(bucket , user.uid , filetype)
+        const {presignedUrl , uniqueKey} = await uploadObjectinBucket(bucket , user.uid )
         // create db document
         const image = await Images.create({
             userId: userId,
@@ -32,7 +27,8 @@ const imageUploader = catchAsync(async (req: AuthRequest, res: Response) => {
             imageId: uniqueKey,
         })
         // return the presigned url
-        return sendSuccess(res, {image: image , presignedUrl: presignedUrl }, "Image upload url generated successfully", 200)
+        const signedurl = presignedUrl.replace("minio:9000" , "localhost:9000")
+        return sendSuccess(res, {image: image , presignedUrl: signedurl }, "Image upload url generated successfully", 200)
     } catch (error) {
         console.log(error)
         return sendError(res, "Internal server error while image upload", 500, null)
