@@ -10,7 +10,8 @@ const uploadImage = async (file : any) => {
         const image = await s3client.send(
             new GetObjectCommand({
                 Bucket: process.env.BUCKET_NAME as string,
-                Key: file
+                Key: file,
+                ResponseContentDisposition: "inline",
             })
         )
         const unit8Array: unknown = await image?.Body?.transformToByteArray()
