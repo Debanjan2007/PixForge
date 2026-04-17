@@ -6,7 +6,7 @@
 A scalable and distributed image processing microservice system designed to handle image uploads, transformations, and management with robust authentication.
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=flat-square)](https://github.com/Debanjan2007/PixForge/actions)
-[![Code Coverage](https://img.shields.io/badge/coverage-95%25-yellowgreen?style=flat-square)](https://github.com/Debanjan2007/PixForge/coverage)
+[![Code Coverage](https://img.shields.io/badge/coverage-99%25-yellowgreen?style=flat-square)](https://github.com/Debanjan2007/PixForge/coverage)
 [![Latest Version](https://img.shields.io/github/package-json/v/Debanjan2007/PixForge/main?style=flat-square)](https://github.com/Debanjan2007/PixForge/releases)
 [![License](https://img.shields.io/github/license/Debanjan2007/PixForge?style=flat-square)](LICENSE)
 [![Issues](https://img.shields.io/github/issues/Debanjan2007/PixForge?style=flat-square)](https://github.com/Debanjan2007/PixForge/issues)
@@ -78,13 +78,24 @@ Version 2.0.0 - This project represents a significant refactor from a monolithic
 Pixforge is a microservice-based architecture, HLD:
 ```mermaid
 graph TD
-    User --HTTP Requests--> API
-    API --putObject--> S3(Object Storage)
-    API --Add Job--> Queue
-    Queue --Push--> Worker
-    Worker --Process--> Imagekit
-    Worker --Delete--> S3(Object Storage)
-    Worker --Update--> MongoDB
+
+    User -- Request Upload URL --> API
+
+    API -- Generate Presigned URL --> User
+
+    User -- PUT (Direct Upload) --> S3[Object Storage (MinIO)]
+
+    S3 -- Emit Event (ObjectCreated) --> ImageService[Image Service]
+
+    ImageService -- Add Job --> Queue[Redis Queue]
+
+    Queue -- Push --> Worker
+
+    Worker -- Process Image --> Imagekit
+
+    Worker -- Delete Original --> S3
+
+    Worker -- Update Metadata --> MongoDB
 ```
 PixForge is designed as a microservice system, composed of several independent services that communicate with each other.
 ```mermaid
@@ -226,6 +237,31 @@ Before you begin, ensure you have the following installed:
     *   Access MinIO Console: `http://localhost:9001` (using `MINIO_ROOT_USERNAME` and `MINIO_ROOT_PASSWORD` from `image-service/docker/.env`).
 
 ## 💡 Usage
+
+## ⚡ Frontend Integration (Zero Headache Setup)
+
+With the frontend bundled using Vite and containerized with Docker, spinning up the entire system has become significantly simpler.
+
+Previously, running the frontend required:
+- manual dependency installation
+- starting a separate dev server
+- managing ports and environment configs
+
+Now, everything is handled inside Docker.
+
+### 🚀 What changed?
+
+- The frontend is built using **Vite**
+- Production build is generated during Docker build stage
+- Static files are served via **Nginx**
+- Included directly in the `docker-compose` setup
+
+### ✅ Result
+
+Running the entire system is now as simple as:
+
+```bash
+docker-compose up --build
 
 The API is exposed via Nginx on `http://localhost:8080`. All API routes are prefixed with `/api/auth` and `/api/images`.
 
