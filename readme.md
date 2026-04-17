@@ -83,11 +83,11 @@ graph TD
 
     API -- Generate Presigned URL --> User
 
-    User -- PUT (Direct Upload) --> S3[Object Storage (MinIO)]
+    User -- PUT (Direct Upload) --> S3["Object Storage - MinIO"]
 
-    S3 -- Emit Event (ObjectCreated) --> ImageService[Image Service]
+    S3 -- Emit Event (ObjectCreated) --> ImageService["Image Service"]
 
-    ImageService -- Add Job --> Queue[Redis Queue]
+    ImageService -- Add Job --> Queue["Redis Queue"]
 
     Queue -- Push --> Worker
 
